@@ -8,6 +8,7 @@
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import {
+  Pressable,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -76,10 +77,12 @@ function App(): React.JSX.Element {
           style={{
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
           }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
+          <Pressable onPress={getTTS}>
+            <Section title="Step One">
+              Edit <Text style={styles.highlight}>App.tsx</Text> to change this
+              screen and then come back to see your edits.
+            </Section>
+          </Pressable>
           <Section title="See Your Changes">
             <ReloadInstructions />
           </Section>
@@ -94,6 +97,28 @@ function App(): React.JSX.Element {
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+//Remove me and the Pressable which calls me above
+async function getTTS() {
+  console.log('1111');
+  try {
+    console.log('2222');
+    //Have to fetch through ngrok because it seems to only like https
+    const response = await fetch(
+      'https://0860-143-52-30-15.ngrok-free.app/api/tts',
+      {
+        method: 'POST',
+        body: JSON.stringify({text: 'Hello World'}),
+      },
+    );
+    const audio = await response.text();
+
+    console.log(audio);
+    console.log('hello');
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 const styles = StyleSheet.create({

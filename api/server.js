@@ -1,45 +1,31 @@
-const Express = require("express");
+const express = require("express");
 const dotenv = require("dotenv");
-// const mongoose = require("mongoose");
-const TextToSpeechV1 = require("ibm-watson/text-to-speech/v1");
-const { IamAuthenticator } = require("ibm-watson/auth");
-const fs = require("fs");
+const mongoose = require("mongoose");
+const cors = require("cors");
 
 dotenv.config();
 
-const app = Express();
+const app = express();
 
-try {
-  const textToSpeech = new TextToSpeechV1({
-    authenticator: new IamAuthenticator({
-      apikey: process.env.IBM_API_KEY,
-    }),
-    serviceUrl: process.env.IBM_SERVICE_URL,
+app.use(express.json());
+app.use((req, res, next) => {
+  console.log("✅ " + req.path, req.method, req.body);
+  next();
+});
+
+const userRouter = require("./routes/user-router");
+const ttsRouter = require("./routes/tts-router");
+
+app.use("/api/", userRouter);
+app.use("/api/tts/", ttsRouter);
+
+// 404
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "API endpoint not found",
   });
-  console.log("✅ Connected to IBM Watson");
-  const synthesizeParams = {
-    text: "Hello world",
-    accept: "audio/wav",
-    voice: "en-GB_JamesV3Voice",
-  };
-
-  // textToSpeech
-  //   .synthesize(synthesizeParams)
-  //   .then((response) => {
-  //     // The following line is necessary only for
-  //     // wav formats; otherwise, `response.result`
-  //     // can be directly piped to a file.
-  //     return textToSpeech.repairWavHeaderStream(response.result);
-  //   })
-  //   .then((buffer) => {
-  //     fs.writeFileSync("hello_world.wav", buffer);
-  //   })
-  //   .catch((err) => {
-  //     console.log("error:", err);
-  //   });
-} catch (error) {
-  console.log(error);
-}
+});
 
 // Connect to DB
 mongoose
