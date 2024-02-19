@@ -7,14 +7,14 @@ const fs = require("fs");
 
 dotenv.config();
 
-// const app = Express();
+const app = Express();
 
 try {
   const textToSpeech = new TextToSpeechV1({
     authenticator: new IamAuthenticator({
-      apikey: "sSa8nFjgWge6EtF4zLmrCPwcuT7emvtZQFSoCfrQw0kG",
+      apikey: process.env.IBM_API_KEY,
     }),
-    serviceUrl: "https://api.eu-gb.text-to-speech.watson.cloud.ibm.com",
+    serviceUrl: process.env.IBM_SERVICE_URL,
   });
   console.log("✅ Connected to IBM Watson");
   const synthesizeParams = {
@@ -42,17 +42,17 @@ try {
 }
 
 // Connect to DB
-// mongoose
-//   .connect(process.env.MONGO_URI)
-//   .then(() => {
-//     console.log("✅ Connected to database");
-//     // Listen to request
-//     app.listen(process.env.PORT, process.env.DOMAIN, () => {
-//       console.log(
-//         `✅ Server started on ${process.env.DOMAIN}:${process.env.PORT}`
-//       );
-//     });
-//   })
-//   .catch((error) => {
-//     console.error(error);
-//   });
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("✅ Connected to database");
+    // Listen to request
+    app.listen(process.env.PORT, process.env.DOMAIN, () => {
+      console.log(
+        `✅ Server started on ${process.env.DOMAIN}:${process.env.PORT}`
+      );
+    });
+  })
+  .catch((error) => {
+    console.error(error);
+  });
