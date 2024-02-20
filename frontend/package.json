@@ -19,7 +19,7 @@
     "react-native-camera": "^4.2.1",
     "react-native-permissions": "^3.8.0",
     "react-native-qrcode-scanner": "^1.5.5",
-    "@viro-community/react-viro": "^2.40.1",
+    "@viro-community/react-viro": "^2.40.1"
   },
   "resolutions": {
     "react-native-permissions": "^3.8.0"
