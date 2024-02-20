@@ -26,6 +26,9 @@ import {
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 
+import RNFS from 'react-native-fs';
+import Sound from 'react-native-sound';
+
 type SectionProps = PropsWithChildren<{
   title: string;
 }>;
@@ -113,7 +116,29 @@ async function getTTS() {
       },
     );
     const audio = await response.text();
-
+    const path = RNFS.DocumentDirectoryPath + '/audio.wav';
+    console.log('Path:', path);
+    RNFS.writeFile(path, audio, 'utf8')
+      .then(success => {
+        console.log('FILE WRITTEN!');
+      })
+      .catch(err => {
+        console.log(err.message);
+      });
+    const sound = new Sound(path, Sound.MAIN_BUNDLE, error => {
+      console.log(sound);
+      if (error) {
+        console.log('failed to load the sound', error);
+        return;
+      }
+      sound.play(success => {
+        if (success) {
+          console.log('successfully finished playing');
+        } else {
+          console.log('playback failed due to audio decoding errors');
+        }
+      });
+    });
     console.log(audio);
     console.log('hello');
   } catch (error) {

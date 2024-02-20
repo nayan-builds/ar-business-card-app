@@ -13,23 +13,27 @@ const educationHistorySchema = new mongoose.Schema({
   qualification: { type: String, required: true, trim: true },
   startDate: { type: Date, required: true },
   endDate: { type: Date, required: true },
-  description: { type: String, required: true, trim: true },
+  description: { type: String, default: null, required: false, trim: true },
 });
 
 const contactSchema = new mongoose.Schema({
-  linkedIn: { type: String, required: true, trim: true },
-  email: { type: String, required: true, trim: true },
-  phone: { type: String, required: true, trim: true },
+  linkedIn: { type: String, required: false, trim: true },
+  email: { type: String, required: false, trim: true },
+  phone: { type: String, required: false, trim: true },
 });
 
 const userSchema = new mongoose.Schema({
   firstName: { type: String, required: true, trim: true },
   lastName: { type: String, required: true, trim: true },
   overview: { type: String, required: true, trim: true },
-  workHistory: { type: [workHistorySchema], required: true },
-  educationHistory: { type: [educationHistorySchema], required: true },
-  interests: { type: [String], required: true },
-  contact: { type: contactSchema, required: true },
+  workHistory: { type: [workHistorySchema], default: null, required: false },
+  educationHistory: {
+    type: [educationHistorySchema],
+    default: null,
+    required: false,
+  },
+  interests: { type: [String], default: null, required: false },
+  contact: { type: contactSchema, default: null, required: false },
 });
 
 module.exports = mongoose.model("User", userSchema);

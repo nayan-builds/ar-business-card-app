@@ -16,7 +16,7 @@ app.use((req, res, next) => {
 const userRouter = require("./routes/user-router");
 const ttsRouter = require("./routes/tts-router");
 
-app.use("/api/", userRouter);
+app.use("/api/user/", userRouter);
 app.use("/api/tts/", ttsRouter);
 
 // 404
