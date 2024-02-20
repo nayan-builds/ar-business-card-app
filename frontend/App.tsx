@@ -8,6 +8,7 @@
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import {
+  Pressable,
   SafeAreaView,
   ScrollView,
   StatusBar,
@@ -24,6 +25,9 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
+
+import RNFS from 'react-native-fs';
+import Sound from 'react-native-sound';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -76,10 +80,12 @@ function App(): React.JSX.Element {
           style={{
             backgroundColor: isDarkMode ? Colors.black : Colors.white,
           }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
+          <Pressable onPress={getTTS}>
+            <Section title="Step One">
+              Edit <Text style={styles.highlight}>App.tsx</Text> to change this
+              screen and then come back to see your edits.
+            </Section>
+          </Pressable>
           <Section title="See Your Changes">
             <ReloadInstructions />
           </Section>
@@ -94,6 +100,50 @@ function App(): React.JSX.Element {
       </ScrollView>
     </SafeAreaView>
   );
+}
+
+//Remove me and the Pressable which calls me above
+async function getTTS() {
+  console.log('1111');
+  try {
+    console.log('2222');
+    //Have to fetch through ngrok because it seems to only like https
+    const response = await fetch(
+      'https://0860-143-52-30-15.ngrok-free.app/api/tts',
+      {
+        method: 'POST',
+        body: JSON.stringify({text: 'Hello World'}),
+      },
+    );
+    const audio = await response.text();
+    const path = RNFS.DocumentDirectoryPath + '/audio.wav';
+    console.log('Path:', path);
+    RNFS.writeFile(path, audio, 'utf8')
+      .then(success => {
+        console.log('FILE WRITTEN!');
+      })
+      .catch(err => {
+        console.log(err.message);
+      });
+    const sound = new Sound(path, Sound.MAIN_BUNDLE, error => {
+      console.log(sound);
+      if (error) {
+        console.log('failed to load the sound', error);
+        return;
+      }
+      sound.play(success => {
+        if (success) {
+          console.log('successfully finished playing');
+        } else {
+          console.log('playback failed due to audio decoding errors');
+        }
+      });
+    });
+    console.log(audio);
+    console.log('hello');
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 const styles = StyleSheet.create({
