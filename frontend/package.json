@@ -10,12 +10,16 @@
     "test": "jest"
   },
   "dependencies": {
-    "@viro-community/react-viro": "^2.40.1",
+    "@react-navigation/native": "^6.1.10",
+    "@react-navigation/native-stack": "^6.9.18",
     "react": "18.2.0",
     "react-native": "0.73.4",
+    "react-native-safe-area-context": "^4.9.0",
+    "react-native-screens": "^3.29.0",
     "react-native-camera": "^4.2.1",
     "react-native-permissions": "^3.8.0",
-    "react-native-qrcode-scanner": "^1.5.5"
+    "react-native-qrcode-scanner": "^1.5.5",
+    "@viro-community/react-viro": "^2.40.1",
   },
   "resolutions": {
     "react-native-permissions": "^3.8.0"
