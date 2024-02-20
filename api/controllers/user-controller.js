@@ -1,5 +1,4 @@
 const userDB = require("../schema/user-schema");
-const mongoose = require("mongoose");
 
 const getUser = async (req, res) => {
   const { id } = req.params;
@@ -12,12 +11,10 @@ const getUser = async (req, res) => {
     return res.status(200).json({ success: true, user });
   } catch (error) {
     console.log("❌ Get user failed");
-    return res
-      .status(400)
-      .json({
-        success: false,
-        message: error ? error.message : "Get user failed",
-      });
+    return res.status(400).json({
+      success: false,
+      message: error ? error.message : "Get user failed",
+    });
   }
 };
 
@@ -117,4 +114,47 @@ const createUser = async (req, res) => {
   }
 };
 
-module.exports = { getUser, createUser };
+const editUser = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const body = req.body;
+    const update = {};
+    if (typeof body.firstName !== "undefined") {
+      if (body.firstName === null) throw Error("First name cannot be null");
+      update.firstName = body.firstName;
+    }
+    if (typeof body.lastName !== "undefined") {
+      if (body.lastName === null) throw Error("Last name cannot be null");
+      update.lastName = body.lastName;
+    }
+    if (typeof body.overview !== "undefined") {
+      if (body.overview === null) throw Error("Overview cannot be null");
+      update.overview = body.overview;
+    }
+    if (typeof body.workHistory !== "undefined") {
+      update.workHistory = body.workHistory;
+    }
+    if (typeof body.educationHistory !== "undefined") {
+      update.educationHistory = body.educationHistory;
+    }
+    if (typeof body.interests !== "undefined") {
+      update.interests = body.interests;
+    }
+    if (typeof body.contact !== "undefined") {
+      update.contact = body.contact;
+    }
+
+    console.log(update);
+    const user = await userDB.findByIdAndUpdate(id, update, { new: true });
+    console.log("✅ Update user successfully");
+    return res.status(201).json({ success: true, user });
+  } catch (error) {
+    console.log("❌ Update user failed");
+    return res.status(400).json({
+      success: false,
+      message: error ? error.message : "Update user failed",
+    });
+  }
+};
+
+module.exports = { getUser, createUser, editUser };
