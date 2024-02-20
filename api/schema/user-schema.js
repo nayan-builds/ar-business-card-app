@@ -8,9 +8,15 @@ const workHistorySchema = new mongoose.Schema({
   description: { type: String, required: true, trim: true },
 });
 
+const qualificationSchema = new mongoose.Schema({
+  level: { type: String, required: true, trim: true },
+  name: { type: String, required: true, trim: true },
+  grade: { type: String, required: true, trim: true },
+});
+
 const educationHistorySchema = new mongoose.Schema({
   institution: { type: String, required: true, trim: true },
-  qualification: { type: String, required: true, trim: true },
+  qualifications: { type: [qualificationSchema], required: true, trim: true },
   startDate: { type: Date, required: true },
   endDate: { type: Date, required: true },
   description: { type: String, default: null, required: false, trim: true },
