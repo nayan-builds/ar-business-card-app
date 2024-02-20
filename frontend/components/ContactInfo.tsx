@@ -52,12 +52,10 @@ function ContactDetails() {
             {
               color: isDarkMode ? Colors.light : Colors.dark,
             },
-          ]}>
-
-        </Text>
+          ]}></Text>
       </View>
       <View style={{justifyContent: 'center', alignItems: 'center'}}>
-        <Image source={require("../res/arrow.png")} />
+        <Image source={require('../res/arrow.png')} />
       </View>
     </View>
   );
@@ -95,27 +93,27 @@ function Section({children, title, image}: SectionProps): React.JSX.Element {
 }
 
 function ContactInfo(): React.JSX.Element {
-    return (
-      <SafeAreaView style={styles.backgroundStyle}>
-            <Section title="LinkdenIn" image={require('../res/link.png')}>
-             13 Connections   •   118 Posts
-            </Section>
-            <Section title="JohnDoe95@gmail.com" image={require('../res/email.png')}>
-             Email us        Mon-Fri  •  9-17
-            </Section>
-            <Section title="+447878774536" image={require('../res/phone.png')}>
-             Call us           Mon-Fri  •  9-17
-            </Section>
-      </SafeAreaView>
-    );
-  }
+  return (
+    <SafeAreaView style={styles.backgroundStyle}>
+      <Section title="LinkedIn" image={require('../res/link.png')}>
+        13 Connections • 118 Posts
+      </Section>
+      <Section title="JohnDoe95@gmail.com" image={require('../res/email.png')}>
+        Email us Mon-Fri • 9-17
+      </Section>
+      <Section title="+447878774536" image={require('../res/phone.png')}>
+        Call us Mon-Fri • 9-17
+      </Section>
+    </SafeAreaView>
+  );
+}
 
 const styles = StyleSheet.create({
   backgroundStyle: {
     padding: 20,
   },
   sectionContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 10,
     marginTop: 32,
     padding: 10,
@@ -123,14 +121,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   contactDetailsContainer: {
-    flexDirection: "row",
+    flexDirection: 'row',
     gap: 10,
     marginTop: 32,
     padding: 10,
     borderWidth: 1,
     borderRadius: 10,
     justifyContent: 'center',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   sectionTitle: {
     fontSize: 24,
