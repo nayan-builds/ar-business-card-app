@@ -1,5 +1,4 @@
 const userDB = require("../schema/user-schema");
-const mongoose = require("mongoose");
 
 const getUser = async (req, res) => {
   const { id } = req.params;
@@ -118,25 +117,33 @@ const createUser = async (req, res) => {
 const editUser = async (req, res) => {
   try {
     const { id } = req.params;
+    const body = req.body;
     const update = {};
-    for (const key of Object.keys(req.body)) {
-      if (req.body[key] !== "") {
-        if (req.body[key] === null) {
-          switch (key) {
-            case "firstName":
-              throw Error("First name cannot be null");
-            case "lastName":
-              throw Error("Last name cannot be null");
-            case "overview":
-              throw Error("Overview cannot be null");
-            default:
-              update[key] = req.body[key];
-          }
-        } else {
-          update[key] = req.body[key];
-        }
-      }
+    if (typeof body.firstName !== "undefined") {
+      if (body.firstName === null) throw Error("First name cannot be null");
+      update.firstName = body.firstName;
     }
+    if (typeof body.lastName !== "undefined") {
+      if (body.lastName === null) throw Error("Last name cannot be null");
+      update.lastName = body.lastName;
+    }
+    if (typeof body.overview !== "undefined") {
+      if (body.overview === null) throw Error("Overview cannot be null");
+      update.overview = body.overview;
+    }
+    if (typeof body.workHistory !== "undefined") {
+      update.workHistory = body.workHistory;
+    }
+    if (typeof body.educationHistory !== "undefined") {
+      update.educationHistory = body.educationHistory;
+    }
+    if (typeof body.interests !== "undefined") {
+      update.interests = body.interests;
+    }
+    if (typeof body.contact !== "undefined") {
+      update.contact = body.contact;
+    }
+
     console.log(update);
     const user = await userDB.findByIdAndUpdate(id, update, { new: true });
     console.log("✅ Update user successfully");
