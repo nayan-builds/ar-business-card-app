@@ -1,10 +1,12 @@
 import {
+  Viro3DObject,
   ViroARScene,
   ViroARSceneNavigator,
+  ViroAmbientLight,
   ViroText,
 } from '@viro-community/react-viro';
 import React, {useState} from 'react';
-import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {BarCodeReadEvent} from 'react-native-camera';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 
@@ -13,7 +15,16 @@ const CARD_SIGNATURE = 'CARD_';
 const SceneAR = () => {
   return (
     <ViroARScene>
-      <ViroText text={'Hello :)'}></ViroText>
+      <ViroAmbientLight color="#ffffff" />
+      <Viro3DObject
+        source={require('./res/r2d2.obj')}
+        resources={[require('./res/r2d2.mtl')]}
+        highAccuracyEvents={true}
+        position={[0, -0.5, -1]}
+        scale={[1, 1, 1]}
+        rotation={[0, -90, 0]}
+        type="OBJ"
+      />
     </ViroARScene>
   );
 };
@@ -23,11 +34,9 @@ export default () => {
 
   const onRead = (e: BarCodeReadEvent) => {
     var data = e.data;
-    var position = data.indexOf(CARD_SIGNATURE) + CARD_SIGNATURE.length;
+    var position = CARD_SIGNATURE.length;
 
-    console.log(data);
-
-    if (position == -1) {
+    if (data.indexOf(CARD_SIGNATURE) == -1) {
       console.log(`QR code is not valid: ${data}`);
     } else {
       var id = parseInt(data.substring(position));
@@ -45,11 +54,4 @@ export default () => {
   }
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-  },
-});
+const styles = StyleSheet.create({});
