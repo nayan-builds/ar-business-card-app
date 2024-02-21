@@ -81,6 +81,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        missingDimensionStrategy 'react-native-camera', 'mlkit'
     }
     signingConfigs {
         debug {
@@ -114,6 +115,12 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+    implementation project(':gvr_common')
+    implementation project(':arcore_client')
+    implementation project(path: ':react_viro')
+    implementation project(path: ':viro_renderer')
+    implementation 'com.google.protobuf.nano:protobuf-javanano:3.0.0-alpha-7'
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
+apply plugin: 'com.google.android.gms.strict-version-matcher-plugin'
