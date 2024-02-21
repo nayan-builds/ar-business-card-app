@@ -25,6 +25,8 @@ export default () => {
     var data = e.data;
     var position = data.indexOf(CARD_SIGNATURE) + CARD_SIGNATURE.length;
 
+    console.log(data);
+
     if (position == -1) {
       console.log(`QR code is not valid: ${data}`);
     } else {
