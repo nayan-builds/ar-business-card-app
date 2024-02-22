@@ -106,9 +106,9 @@ function CustomButton({text, onPress}: {text: string; onPress: () => void}) {
       ]}
       onPress={onPress}
       //hitSlop is used to increase the touchable area of the button
-      hitSlop={15}
+      hitSlop={10}
       //pressRetentionOffset is used to increase the distance that you need to move your finger before the button is unpressed
-      pressRetentionOffset={25}>
+      pressRetentionOffset={20}>
       <Text style={styles.buttonText}>{text}</Text>
     </Pressable>
   );
