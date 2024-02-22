@@ -24,10 +24,20 @@ interface userDetails {
   overview?: string;
 }
 
-const SceneAR = ({sceneNavigator: {viroAppProps: cardId}}) => {
-  const [user, setUser] = useState<userDetails>({});
+interface SceneARProps {
+  sceneNavigator: {
+    viroAppProps: {
+      cardId: string;
+      user: userDetails;
+      setUser: (user: userDetails) => void;
+    };
+  };
+}
 
-  const onLoad = async () => {
+const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
+  const {user, setUser, cardId} = sceneNavigator.viroAppProps;
+
+  const playText = async (text: string) => {
     const response = await fetch(
       'https://bef0-143-52-33-95.ngrok-free.app/api/tts',
       {
@@ -36,7 +46,7 @@ const SceneAR = ({sceneNavigator: {viroAppProps: cardId}}) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text: user.overview,
+          text: text,
           voice: 'en-GB_JamesV3Voice',
         }),
       },
@@ -77,8 +87,8 @@ const SceneAR = ({sceneNavigator: {viroAppProps: cardId}}) => {
   }, []);
 
   useEffect(() => {
-    if (Object.keys(user).length !== 0) {
-      onLoad();
+    if (user && Object.keys(user).length !== 0) {
+      playText(user.overview!);
     }
   }, [user]);
 
@@ -100,6 +110,7 @@ const SceneAR = ({sceneNavigator: {viroAppProps: cardId}}) => {
 
 export default function Camera() {
   const [cardId, setCardId] = useState('');
+  const [user, setUser] = useState<userDetails>({});
 
   const onRead = (e: BarCodeReadEvent) => {
     var data = e.data;
@@ -123,17 +134,21 @@ export default function Camera() {
         <ViroARSceneNavigator
           autofocus={true}
           initialScene={{scene: SceneAR}}
-          viroAppProps={cardId}
+          viroAppProps={{
+            cardId: cardId,
+            user: user,
+            setUser,
+          }}
         />
         <View style={{position: 'absolute', left: 0, bottom: -10}}>
-          <MoreInfo />
+          <MoreInfo user={user} />
         </View>
       </>
     );
   }
 }
 
-function MoreInfo() {
+function MoreInfo({user}: {user: userDetails}) {
   const windowWidth = useWindowDimensions().width;
   const margin = 10;
   const width = windowWidth - 2 * margin;
@@ -145,10 +160,7 @@ function MoreInfo() {
         {width, marginHorizontal: margin, paddingBottom: 10},
       ]}>
       <Text style={styles.menuHeading}>Want more information about me?</Text>
-      <CustomButton
-        text="Work History"
-        onPress={() => console.log('Pressed')}
-      />
+      <CustomButton text="Work History" onPress={() => console.log(user)} />
       <CustomButton
         text="Education History"
         onPress={() => console.log('Pressed')}

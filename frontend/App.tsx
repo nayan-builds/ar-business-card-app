@@ -5,6 +5,7 @@ import HomeScreen from './screens/HomeScreen';
 import Camera from './screens/CameraAR';
 import MyDetails from './screens/MyDetails';
 import ContactInfo from './screens/ContactInfo';
+import MainPage from './screens/MainPage';
 
 const Stack = createNativeStackNavigator();
 
@@ -14,7 +15,7 @@ function App(): React.JSX.Element {
       <Stack.Navigator>
         <Stack.Screen
           name="Home"
-          component={HomeScreen}
+          component={MainPage}
           options={{title: 'Welcome'}}
         />
         <Stack.Screen name="Camera" component={Camera} />
