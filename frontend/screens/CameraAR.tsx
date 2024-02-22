@@ -20,8 +20,33 @@ import Sound from 'react-native-sound';
 
 const CARD_SIGNATURE = 'CARD_';
 
+interface WorkHistory {
+  company: string;
+  position: string;
+  startDate: Date;
+  endDate: Date;
+  description: string;
+}
+
+interface qualification {
+  level: string;
+  name: string;
+  grade: string;
+}
+
+interface educationHistory {
+  institution: string;
+  qualifications: qualification[];
+  startDate: Date;
+  endDate: Date;
+  description: string;
+}
+
 interface userDetails {
   overview?: string;
+  workHistory?: WorkHistory[];
+  educationHistory?: educationHistory[];
+  interests?: string[];
 }
 
 interface SceneARProps {
@@ -34,39 +59,48 @@ interface SceneARProps {
   };
 }
 
+const dateToReadable = (date: Date) => {
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+  };
+
+  return date.toLocaleDateString('en-US', options);
+};
+
+const playText = async (text: string) => {
+  const response = await fetch(
+    'https://bef0-143-52-33-95.ngrok-free.app/api/tts',
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text: text,
+        voice: 'en-GB_JamesV3Voice',
+      }),
+    },
+  );
+
+  const {audio, timings} = await response.json();
+  if (!audio || !timings) return;
+
+  const path = `${RNFS.TemporaryDirectoryPath}/audio.mp3`;
+  await RNFS.writeFile(path, audio, 'base64');
+
+  const sound = new Sound(path, '', error => {
+    if (error) {
+      console.log('failed to load sound', error);
+      return;
+    }
+
+    sound.play();
+  });
+};
+
 const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
   const {user, setUser, cardId} = sceneNavigator.viroAppProps;
-
-  const playText = async (text: string) => {
-    const response = await fetch(
-      'https://bef0-143-52-33-95.ngrok-free.app/api/tts',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: text,
-          voice: 'en-GB_JamesV3Voice',
-        }),
-      },
-    );
-
-    const {audio, timings} = await response.json();
-    if (!audio || !timings) return;
-
-    const path = `${RNFS.TemporaryDirectoryPath}/audio.mp3`;
-    await RNFS.writeFile(path, audio, 'base64');
-
-    const sound = new Sound(path, '', error => {
-      if (error) {
-        console.log('failed to load sound', error);
-        return;
-      }
-
-      sound.play();
-    });
-  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -88,7 +122,7 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
 
   useEffect(() => {
     if (user && Object.keys(user).length !== 0) {
-      playText(user.overview!);
+      //playText(user.overview!);
     }
   }, [user]);
 
@@ -160,18 +194,46 @@ function MoreInfo({user}: {user: userDetails}) {
         {width, marginHorizontal: margin, paddingBottom: 10},
       ]}>
       <Text style={styles.menuHeading}>Want more information about me?</Text>
-      <CustomButton text="Work History" onPress={() => console.log(user)} />
+      <CustomButton
+        text="Work History"
+        onPress={() => {
+          var text = '';
+
+          user.workHistory!.forEach(entry => {
+            text += `I worked as a ${entry.position} at ${entry.company} for ${
+              new Date(entry.endDate).getFullYear() -
+              new Date(entry.startDate).getFullYear()
+            } years. ${entry.description !== null ? entry.description : ''}`;
+          });
+
+          playText(text);
+        }}
+      />
       <CustomButton
         text="Education History"
-        onPress={() => console.log('Pressed')}
+        onPress={() => {
+          var text = '';
+
+          user.educationHistory!.forEach(entry => {
+            text += `I attended ${entry.institution} from ${dateToReadable(
+              new Date(entry.startDate),
+            )} to ${dateToReadable(new Date(entry.endDate))}.`;
+          });
+
+          playText(text);
+        }}
       />
       <CustomButton
         text="Hobbies and Interests"
-        onPress={() => console.log('Pressed')}
-      />
-      <CustomButton
-        text="Contact Info"
-        onPress={() => console.log('Pressed')}
+        onPress={() => {
+          var text = "I'm interested in ";
+
+          user.interests!.forEach(entry => {
+            text += entry;
+          });
+
+          playText(text);
+        }}
       />
     </View>
   );
