@@ -6,6 +6,8 @@ import {
 } from '@viro-community/react-viro';
 import React, {useEffect, useState} from 'react';
 import {
+  Image,
+  ImageSourcePropType,
   Pressable,
   StyleSheet,
   Text,
@@ -122,7 +124,7 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
 
   useEffect(() => {
     if (user && Object.keys(user).length !== 0) {
-      //playText(user.overview!);
+      playText(user.overview!);
     }
   }, [user]);
 
@@ -193,9 +195,10 @@ function MoreInfo({user}: {user: userDetails}) {
         styles.menuBackground,
         {width, marginHorizontal: margin, paddingBottom: 10},
       ]}>
-      <Text style={styles.menuHeading}>Want more information about me?</Text>
+      {/* <Text style={styles.menuHeading}>Want more information about me?</Text> */}
       <CustomButton
-        text="Work History"
+        text="Work"
+        image={require('./../res/work.png')}
         onPress={() => {
           var text = '';
 
@@ -210,7 +213,8 @@ function MoreInfo({user}: {user: userDetails}) {
         }}
       />
       <CustomButton
-        text="Education History"
+        text="Education"
+        image={require('./../res/education.png')}
         onPress={() => {
           var text = '';
 
@@ -224,7 +228,8 @@ function MoreInfo({user}: {user: userDetails}) {
         }}
       />
       <CustomButton
-        text="Hobbies and Interests"
+        text="Interests"
+        image={require('./../res/hobbies.png')}
         onPress={() => {
           var text = "I'm interested in ";
 
@@ -239,7 +244,15 @@ function MoreInfo({user}: {user: userDetails}) {
   );
 }
 
-function CustomButton({text, onPress}: {text: string; onPress: () => void}) {
+function CustomButton({
+  text,
+  onPress,
+  image,
+}: {
+  text: string;
+  onPress: () => void;
+  image: ImageSourcePropType;
+}) {
   return (
     <Pressable
       style={({pressed}) => [
@@ -253,6 +266,7 @@ function CustomButton({text, onPress}: {text: string; onPress: () => void}) {
       hitSlop={10}
       //pressRetentionOffset is used to increase the distance that you need to move your finger before the button is unpressed
       pressRetentionOffset={20}>
+      <Image source={image} style={styles.buttonImage} />
       <Text style={styles.buttonText}>{text}</Text>
     </Pressable>
   );
@@ -260,6 +274,9 @@ function CustomButton({text, onPress}: {text: string; onPress: () => void}) {
 
 const styles = StyleSheet.create({
   button: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    flex: 1,
     margin: 10,
     padding: 10,
     elevation: 2,
@@ -272,9 +289,14 @@ const styles = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
   },
+  buttonImage: {
+    width: 25,
+    height: 25,
+  },
   menuBackground: {
-    flexDirection: 'column',
-    alignItems: 'stretch',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
     borderRadius: 10,
     borderWidth: 3,
