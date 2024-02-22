@@ -70,13 +70,10 @@ export default () => {
 function MoreInfo() {
   const windowWidth = useWindowDimensions().width;
   const margin = 10;
+  const width = windowWidth - 2 * margin;
 
   return (
-    <View
-      style={[
-        styles.menuBackground,
-        {width: windowWidth - 2 * margin, margin},
-      ]}>
+    <View style={[styles.menuBackground, {width, margin}]}>
       <Text style={styles.menuHeading}>Want more information about me?</Text>
       <CustomButton
         text="Work History"
