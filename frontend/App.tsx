@@ -59,7 +59,7 @@ export default () => {
           autofocus={true}
           initialScene={{scene: SceneAR}}
         />
-        <View style={{position: 'absolute', left: 0, bottom: 0}}>
+        <View style={{position: 'absolute', left: 0, bottom: -10}}>
           <MoreInfo />
         </View>
       </>
@@ -73,7 +73,11 @@ function MoreInfo() {
   const width = windowWidth - 2 * margin;
 
   return (
-    <View style={[styles.menuBackground, {width, margin}]}>
+    <View
+      style={[
+        styles.menuBackground,
+        {width, marginHorizontal: margin, paddingBottom: 10},
+      ]}>
       <Text style={styles.menuHeading}>Want more information about me?</Text>
       <CustomButton
         text="Work History"
