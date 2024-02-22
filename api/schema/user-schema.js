@@ -5,7 +5,7 @@ const workHistorySchema = new mongoose.Schema({
   position: { type: String, required: true, trim: true },
   startDate: { type: Date, required: true },
   endDate: { type: Date, required: true },
-  description: { type: String, required: true, trim: true },
+  description: { type: String, default: null, required: false, trim: true },
 });
 
 const qualificationSchema = new mongoose.Schema({
