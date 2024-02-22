@@ -68,7 +68,9 @@ const SceneAR = ({sceneNavigator: {viroAppProps: cardId}}) => {
       );
 
       const data = await response.json();
-      setUser(data.user);
+      if (data.success) {
+        setUser(data.user);
+      }
     };
 
     fetchData();
