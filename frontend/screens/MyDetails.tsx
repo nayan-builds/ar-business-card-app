@@ -1,20 +1,10 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import {useNavigation} from '@react-navigation/native';
-import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   Image,
   ImageProps,
   SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -22,18 +12,33 @@ import {
   View,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 type SectionProps = PropsWithChildren<{
   title: string;
   image?: ImageProps;
 }>;
+
+export default function MyDetails() {
+  return (
+    <SafeAreaView style={styles.backgroundStyle}>
+      <Section title="Work History" image={require('../res/work.png')}>
+        Listen to a more detailed work history
+      </Section>
+      <Section
+        title="Interests and Hobbies"
+        image={require('../res/hobbies.png')}>
+        Listen to interests and hobbies
+      </Section>
+      <Section
+        title="Education History"
+        image={require('../res/education.png')}>
+        Listen to a more detailed education history
+      </Section>
+      <ContactDetails />
+    </SafeAreaView>
+  );
+}
 
 function ContactDetails() {
   const isDarkMode = useColorScheme() === 'dark';
@@ -105,27 +110,6 @@ function Section({children, title, image}: SectionProps): React.JSX.Element {
   );
 }
 
-function HomeScreen() {
-  return (
-    <SafeAreaView style={styles.backgroundStyle}>
-      <Section title="Work History" image={require('../res/work.png')}>
-        Listen to a more detailed work{'\n'}history
-      </Section>
-      <Section
-        title="Interests and Hobbies"
-        image={require('../res/hobbies.png')}>
-        Listen to interests and hobbies
-      </Section>
-      <Section
-        title="Education History"
-        image={require('../res/education.png')}>
-        Listen to a more detailed education history
-      </Section>
-      <ContactDetails />
-    </SafeAreaView>
-  );
-}
-
 const styles = StyleSheet.create({
   backgroundStyle: {
     padding: 20,
@@ -166,5 +150,3 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
-
-export default HomeScreen;
