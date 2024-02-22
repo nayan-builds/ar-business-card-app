@@ -4,7 +4,7 @@ import {
   ViroARSceneNavigator,
   ViroAmbientLight,
 } from '@viro-community/react-viro';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   Pressable,
   StyleSheet,
@@ -15,9 +15,71 @@ import {
 import {BarCodeReadEvent} from 'react-native-camera';
 import QRCodeScanner from 'react-native-qrcode-scanner';
 
+import RNFS from 'react-native-fs';
+import Sound from 'react-native-sound';
+
 const CARD_SIGNATURE = 'CARD_';
 
-const SceneAR = () => {
+interface userDetails {
+  overview?: string;
+}
+
+const SceneAR = ({sceneNavigator: {viroAppProps: cardId}}) => {
+  const [user, setUser] = useState<userDetails>({});
+
+  const onLoad = async () => {
+    const response = await fetch(
+      'https://bef0-143-52-33-95.ngrok-free.app/api/tts',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: user.overview,
+          voice: 'en-GB_JamesV3Voice',
+        }),
+      },
+    );
+
+    const {audio, timings} = await response.json();
+    if (!audio || !timings) return;
+
+    const path = `${RNFS.TemporaryDirectoryPath}/audio.mp3`;
+    await RNFS.writeFile(path, audio, 'base64');
+
+    const sound = new Sound(path, '', error => {
+      if (error) {
+        console.log('failed to load sound', error);
+        return;
+      }
+
+      sound.play();
+    });
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const response = await fetch(
+        `https://bef0-143-52-33-95.ngrok-free.app/api/user/${cardId}`,
+        {
+          method: 'GET',
+        },
+      );
+
+      const data = await response.json();
+      setUser(data.user);
+    };
+
+    fetchData();
+  }, []);
+
+  useEffect(() => {
+    if (Object.keys(user).length !== 0) {
+      onLoad();
+    }
+  }, [user]);
+
   return (
     <ViroARScene>
       <ViroAmbientLight color="#ffffff" />
@@ -35,7 +97,7 @@ const SceneAR = () => {
 };
 
 export default () => {
-  const [cardId, setCardId] = useState(-1);
+  const [cardId, setCardId] = useState('');
 
   const onRead = (e: BarCodeReadEvent) => {
     var data = e.data;
@@ -44,13 +106,14 @@ export default () => {
     if (data.indexOf(CARD_SIGNATURE) == -1) {
       console.log(`QR code is not valid: ${data}`);
     } else {
-      var id = parseInt(data.substring(position));
+      console.log(data);
+      var id = data.substring(position);
       setCardId(id);
       console.log(`Found card identifier from QR code: ${id}`);
     }
   };
 
-  if (cardId == -1) {
+  if (cardId.length == 0) {
     return <QRCodeScanner reactivate={true} onRead={onRead} />;
   } else {
     return (
@@ -58,6 +121,7 @@ export default () => {
         <ViroARSceneNavigator
           autofocus={true}
           initialScene={{scene: SceneAR}}
+          viroAppProps={cardId}
         />
         <View style={{position: 'absolute', left: 0, bottom: -10}}>
           <MoreInfo />
