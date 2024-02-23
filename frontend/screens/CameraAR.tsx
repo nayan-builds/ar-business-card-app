@@ -343,7 +343,7 @@ function MoreInfo({
               var qualificationText = '';
               entry.qualifications.forEach(qualification => {
                 if (qualificationText.length !== 0) qualificationText += ', ';
-                qualificationText += `a ${qualification.level} in ${qualification.name} and ended with ${qualification.grade}`;
+                qualificationText += `a ${qualification.level} in ${qualification.name} and ended with a ${qualification.grade}`;
               });
               qualificationText += '.';
               text += `I attended ${entry.institution} from ${dateToReadable(
