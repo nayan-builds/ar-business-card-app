@@ -305,7 +305,7 @@ function MoreInfo({
               } for ${
                 new Date(entry.endDate).getFullYear() -
                 new Date(entry.startDate).getFullYear()
-              } years. ${entry.description !== null ? entry.description : ''}`;
+              } years. ${entry.description !== null ? entry.description : ''} `;
             });
 
             playText(text, word => setWord(word));
