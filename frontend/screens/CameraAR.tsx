@@ -148,7 +148,7 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
 
   useEffect(() => {
     if (user && Object.keys(user).length !== 0) {
-      //playText(user.overview!, word => setWord(word));
+      playText(user.overview!, word => setWord(word));
     }
   }, [user]);
 
