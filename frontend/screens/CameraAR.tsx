@@ -84,7 +84,7 @@ const dateToReadable = (date: Date) => {
 
 const playText = async (text: string, onWord: (word: string) => void) => {
   const response = await fetch(
-    'https://bef0-143-52-33-95.ngrok-free.app/api/tts',
+    'https://e3d4-143-52-126-93.ngrok-free.app/api/tts',
     {
       method: 'POST',
       headers: {
@@ -109,17 +109,35 @@ const playText = async (text: string, onWord: (word: string) => void) => {
       return;
     }
 
+    //This is the length of each block of time in seconds,
+    //If a word starts inside the current block, it will be
+    //included in the subtitles
+    const timeBlockLength = 1.5;
+    let time = 0;
+
     setInterval(() => {
       sound.getCurrentTime((seconds, isPlaying) => {
+        //This seems to keep playing even after the sound is finished?,
+        //may need fixing somehow as may be repeating unnecessary code
+        let words = '';
+        if (seconds > time) {
+          time += timeBlockLength;
+        }
         for (const timing of timings) {
-          if (seconds < timing[2] && seconds > timing[1]) {
-            onWord(timing[0]);
+          if (time - timeBlockLength <= timing[1] && time >= timing[1]) {
+            words += timing[0] + ' ';
           }
         }
+        words = words.trim();
+
+        //For some reason, this fixes the subtitles keeping the last word
+        if (seconds >= sound.getDuration() - 0.01) words = '';
+        if (isPlaying) onWord(words);
       });
     }, 300);
 
     sound.play(() => {
+      //onEnd() callback
       onWord('');
     });
   });
@@ -131,7 +149,7 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
   useEffect(() => {
     const fetchData = async () => {
       const response = await fetch(
-        `https://bef0-143-52-33-95.ngrok-free.app/api/user/${cardId}`,
+        `https://e3d4-143-52-126-93.ngrok-free.app/api/user/${cardId}`,
         {
           method: 'GET',
         },
@@ -203,26 +221,28 @@ export default function Camera() {
           }}
         />
         <View style={{position: 'absolute', left: 0, bottom: -10}}>
-          {word.length !== 0 && <View
-            style={{
-              display: 'flex',
-              justifyContent: 'center',
-              alignContent: 'center',
-              alignItems: 'center',
-              width: '100%',
-            }}>
-            <Text
+          {word.length !== 0 && (
+            <View
               style={{
-                backgroundColor: 'black',
-                fontSize: 20,
                 display: 'flex',
-                padding: 5,
-                color: 'white',
-                textAlign: 'center',
+                justifyContent: 'center',
+                alignContent: 'center',
+                alignItems: 'center',
+                width: '100%',
               }}>
-              {word}
-            </Text>
-          </View>}
+              <Text
+                style={{
+                  backgroundColor: 'black',
+                  fontSize: 20,
+                  display: 'flex',
+                  padding: 5,
+                  color: 'white',
+                  textAlign: 'center',
+                }}>
+                {word}
+              </Text>
+            </View>
+          )}
           <MoreInfo user={user} setWord={setWord} />
         </View>
       </>
@@ -320,9 +340,17 @@ function MoreInfo({
             var text = '';
 
             user.educationHistory!.forEach(entry => {
+              var qualificationText = '';
+              entry.qualifications.forEach(qualification => {
+                if (qualificationText.length !== 0) qualificationText += ', ';
+                qualificationText += `a ${qualification.level} in ${qualification.name} and ended with ${qualification.grade}`;
+              });
+              qualificationText += '.';
               text += `I attended ${entry.institution} from ${dateToReadable(
                 new Date(entry.startDate),
-              )} to ${dateToReadable(new Date(entry.endDate))}.`;
+              )} to ${dateToReadable(
+                new Date(entry.endDate),
+              )}. While there, I studied ${qualificationText}`;
             });
 
             playText(text, word => setWord(word));
@@ -359,7 +387,7 @@ function CustomButton({
     <Pressable
       style={({pressed}) => [
         {
-          backgroundColor: pressed ? 'rgb(100, 100, 100)' : 'rgb(30, 30, 30)',
+          backgroundColor: pressed ? '#aaa' : '#333',
         },
         styles.button,
       ]}
@@ -384,7 +412,6 @@ const styles = StyleSheet.create({
     elevation: 2,
     opacity: 1,
     borderRadius: 10,
-    backgroundColor: '#333'
   },
   buttonText: {
     color: 'white',
