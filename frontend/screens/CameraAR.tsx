@@ -57,6 +57,7 @@ interface SceneARProps {
       cardId: string;
       user: userDetails;
       setUser: (user: userDetails) => void;
+      setWord: (word: string) => void;
     };
   };
 }
@@ -70,7 +71,7 @@ const dateToReadable = (date: Date) => {
   return date.toLocaleDateString('en-US', options);
 };
 
-const playText = async (text: string) => {
+const playText = async (text: string, onWord: (word: string) => void) => {
   const response = await fetch(
     'https://bef0-143-52-33-95.ngrok-free.app/api/tts',
     {
@@ -97,12 +98,22 @@ const playText = async (text: string) => {
       return;
     }
 
+    setInterval(() => {
+      sound.getCurrentTime((seconds, isPlaying) => {
+        for (const timing of timings) {
+          if (seconds < timing[2] && seconds > timing[1]) {
+            onWord(timing[0]);
+          }
+        }
+      });
+    }, 300);    
+
     sound.play();
   });
 };
 
 const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
-  const {user, setUser, cardId} = sceneNavigator.viroAppProps;
+  const {user, setUser, cardId, setWord} = sceneNavigator.viroAppProps;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -124,7 +135,7 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
 
   useEffect(() => {
     if (user && Object.keys(user).length !== 0) {
-      playText(user.overview!);
+      playText(user.overview!, (word) => setWord(word));
     }
   }, [user]);
 
@@ -147,6 +158,7 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
 export default function Camera() {
   const [cardId, setCardId] = useState('');
   const [user, setUser] = useState<userDetails>({});
+  const [word, setWord] = useState('');
 
   const onRead = (e: BarCodeReadEvent) => {
     var data = e.data;
@@ -174,17 +186,31 @@ export default function Camera() {
             cardId: cardId,
             user: user,
             setUser,
+            setWord
           }}
         />
         <View style={{position: 'absolute', left: 0, bottom: -10}}>
-          <MoreInfo user={user} />
+          <View style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignContent: 'center',
+            width: '100%'
+          }}>
+            <Text style={{
+              backgroundColor: 'black',
+              padding: 5,
+              color: 'white',
+              textAlign: 'center'
+            }}>{word}</Text>
+          </View>
+          <MoreInfo user={user} setWord={setWord} />
         </View>
       </>
     );
   }
 }
 
-function MoreInfo({user}: {user: userDetails}) {
+function MoreInfo({user, setWord}: {user: userDetails, setWord: (word: string) => void}) {
   const windowWidth = useWindowDimensions().width;
   const margin = 10;
   const width = windowWidth - 2 * margin;
@@ -209,7 +235,7 @@ function MoreInfo({user}: {user: userDetails}) {
             } years. ${entry.description !== null ? entry.description : ''}`;
           });
 
-          playText(text);
+          playText(text, (word) => setWord(word));
         }}
       />
       <CustomButton
@@ -224,7 +250,7 @@ function MoreInfo({user}: {user: userDetails}) {
             )} to ${dateToReadable(new Date(entry.endDate))}.`;
           });
 
-          playText(text);
+          playText(text, (word) => setWord(word));
         }}
       />
       <CustomButton
@@ -237,7 +263,7 @@ function MoreInfo({user}: {user: userDetails}) {
             text += entry;
           });
 
-          playText(text);
+          playText(text, (word) => setWord(word));
         }}
       />
     </View>
