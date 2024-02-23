@@ -124,7 +124,7 @@ const playText = async (text: string, onWord: (word: string) => void) => {
           time += timeBlockLength;
         }
         for (const timing of timings) {
-          if (time - timeBlockLength <= timing[1] && time >= timing[1]) {
+          if (time - timeBlockLength <= timing[1] && time > timing[1]) {
             words += timing[0] + ' ';
           }
         }
