@@ -327,7 +327,8 @@ function MoreInfo({user, setWord}: {user: userDetails, setWord: (word: string) =
         }}
       />
     </View>
-  );
+  </>
+  )
 }
 
 function CustomButton({
