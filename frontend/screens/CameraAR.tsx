@@ -119,7 +119,9 @@ const playText = async (text: string, onWord: (word: string) => void) => {
       });
     }, 300);
 
-    sound.play();
+    sound.play(() => {
+      onWord('');
+    });
   });
 };
 
@@ -146,7 +148,7 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
 
   useEffect(() => {
     if (user && Object.keys(user).length !== 0) {
-      playText(user.overview!, word => setWord(word));
+      //playText(user.overview!, word => setWord(word));
     }
   }, [user]);
 
@@ -201,7 +203,7 @@ export default function Camera() {
           }}
         />
         <View style={{position: 'absolute', left: 0, bottom: -10}}>
-          <View
+          {word.length !== 0 && <View
             style={{
               display: 'flex',
               justifyContent: 'center',
@@ -220,7 +222,7 @@ export default function Camera() {
               }}>
               {word}
             </Text>
-          </View>
+          </View>}
           <MoreInfo user={user} setWord={setWord} />
         </View>
       </>
@@ -382,6 +384,7 @@ const styles = StyleSheet.create({
     elevation: 2,
     opacity: 1,
     borderRadius: 10,
+    backgroundColor: '#333'
   },
   buttonText: {
     color: 'white',
