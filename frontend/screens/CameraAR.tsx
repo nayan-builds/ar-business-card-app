@@ -3,14 +3,18 @@ import {
   ViroARScene,
   ViroARSceneNavigator,
   ViroAmbientLight,
+  ViroButton,
 } from '@viro-community/react-viro';
 import React, {useEffect, useState} from 'react';
 import {
   Image,
   ImageSourcePropType,
+  Linking,
   Pressable,
   StyleSheet,
   Text,
+  Touchable,
+  TouchableOpacity,
   View,
   useWindowDimensions,
 } from 'react-native';
@@ -44,11 +48,18 @@ interface educationHistory {
   description: string;
 }
 
+interface contact {
+  email?: string;
+  linkedIn?: string;
+  phone?: string;
+}
+
 interface userDetails {
   overview?: string;
   workHistory?: WorkHistory[];
   educationHistory?: educationHistory[];
   interests?: string[];
+  contact?: contact;
 }
 
 interface SceneARProps {
@@ -146,7 +157,7 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
         source={require('./../res/r2d2.obj')}
         resources={[require('./../res/r2d2.mtl')]}
         highAccuracyEvents={true}
-        position={[0, -0.5, -1]}
+        position={[0, -0.2, -0.3]}
         scale={[1, 1, 1]}
         rotation={[0, -90, 0]}
         type="OBJ"
@@ -214,26 +225,75 @@ function MoreInfo({user, setWord}: {user: userDetails, setWord: (word: string) =
   const windowWidth = useWindowDimensions().width;
   const margin = 10;
   const width = windowWidth - 2 * margin;
-
   return (
-    <View
-      style={[
-        styles.menuBackground,
-        {width, marginHorizontal: margin, paddingBottom: 10},
-      ]}>
-      {/* <Text style={styles.menuHeading}>Want more information about me?</Text> */}
-      <CustomButton
-        text="Work"
-        image={require('./../res/work.png')}
-        onPress={() => {
-          var text = '';
+    <>
+      <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
+        {user.contact?.linkedIn && (
+          <TouchableOpacity
+            onPress={() => Linking.openURL(user.contact!.linkedIn!)}>
+            <Image
+              source={require('./../res/link.png')}
+              style={{
+                width: 50,
+                height: 50,
+                margin: 10,
+                backgroundColor: 'white',
+                borderRadius: 15,
+              }}
+            />
+          </TouchableOpacity>
+        )}
+        {user.contact?.email && (
+          <TouchableOpacity
+            onPress={() => Linking.openURL(`mailto:${user.contact!.email}`)}>
+            <Image
+              source={require('./../res/email.png')}
+              style={{
+                width: 50,
+                height: 50,
+                margin: 10,
+                backgroundColor: 'white',
+                borderRadius: 15,
+              }}
+            />
+          </TouchableOpacity>
+        )}
+        {user.contact?.phone && (
+          <TouchableOpacity
+            onPress={() => Linking.openURL(`tel:${user.contact!.phone!}`)}>
+            <Image
+              source={require('./../res/phone.png')}
+              style={{
+                width: 50,
+                height: 50,
+                margin: 10,
+                backgroundColor: 'white',
+                borderRadius: 15,
+              }}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
+      <View
+        style={[
+          styles.menuBackground,
+          {width, marginHorizontal: margin, paddingBottom: 10},
+        ]}>
+        {/* <Text style={styles.menuHeading}>Want more information about me?</Text> */}
+        <CustomButton
+          text="Work"
+          image={require('./../res/work.png')}
+          onPress={() => {
+            var text = '';
 
-          user.workHistory!.forEach(entry => {
-            text += `I worked as a ${entry.position} at ${entry.company} for ${
-              new Date(entry.endDate).getFullYear() -
-              new Date(entry.startDate).getFullYear()
-            } years. ${entry.description !== null ? entry.description : ''}`;
-          });
+            user.workHistory!.forEach(entry => {
+              text += `I worked as a ${entry.position} at ${
+                entry.company
+              } for ${
+                new Date(entry.endDate).getFullYear() -
+                new Date(entry.startDate).getFullYear()
+              } years. ${entry.description !== null ? entry.description : ''}`;
+            });
 
           playText(text, (word) => setWord(word));
         }}
@@ -244,11 +304,11 @@ function MoreInfo({user, setWord}: {user: userDetails, setWord: (word: string) =
         onPress={() => {
           var text = '';
 
-          user.educationHistory!.forEach(entry => {
-            text += `I attended ${entry.institution} from ${dateToReadable(
-              new Date(entry.startDate),
-            )} to ${dateToReadable(new Date(entry.endDate))}.`;
-          });
+            user.educationHistory!.forEach(entry => {
+              text += `I attended ${entry.institution} from ${dateToReadable(
+                new Date(entry.startDate),
+              )} to ${dateToReadable(new Date(entry.endDate))}.`;
+            });
 
           playText(text, (word) => setWord(word));
         }}
@@ -259,9 +319,9 @@ function MoreInfo({user, setWord}: {user: userDetails, setWord: (word: string) =
         onPress={() => {
           var text = "I'm interested in ";
 
-          user.interests!.forEach(entry => {
-            text += entry;
-          });
+            user.interests!.forEach(entry => {
+              text += entry;
+            });
 
           playText(text, (word) => setWord(word));
         }}
