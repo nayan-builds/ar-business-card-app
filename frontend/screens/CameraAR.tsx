@@ -117,7 +117,7 @@ const playText = async (text: string, onWord: (word: string) => void) => {
           }
         }
       });
-    }, 300);    
+    }, 300);
 
     sound.play();
   });
@@ -146,7 +146,7 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
 
   useEffect(() => {
     if (user && Object.keys(user).length !== 0) {
-      playText(user.overview!, (word) => setWord(word));
+      playText(user.overview!, word => setWord(word));
     }
   }, [user]);
 
@@ -197,22 +197,29 @@ export default function Camera() {
             cardId: cardId,
             user: user,
             setUser,
-            setWord
+            setWord,
           }}
         />
         <View style={{position: 'absolute', left: 0, bottom: -10}}>
-          <View style={{
-            display: 'flex',
-            justifyContent: 'center',
-            alignContent: 'center',
-            width: '100%'
-          }}>
-            <Text style={{
-              backgroundColor: 'black',
-              padding: 5,
-              color: 'white',
-              textAlign: 'center'
-            }}>{word}</Text>
+          <View
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignContent: 'center',
+              alignItems: 'center',
+              width: '100%',
+            }}>
+            <Text
+              style={{
+                backgroundColor: 'black',
+                fontSize: 20,
+                display: 'flex',
+                padding: 5,
+                color: 'white',
+                textAlign: 'center',
+              }}>
+              {word}
+            </Text>
           </View>
           <MoreInfo user={user} setWord={setWord} />
         </View>
@@ -221,7 +228,13 @@ export default function Camera() {
   }
 }
 
-function MoreInfo({user, setWord}: {user: userDetails, setWord: (word: string) => void}) {
+function MoreInfo({
+  user,
+  setWord,
+}: {
+  user: userDetails;
+  setWord: (word: string) => void;
+}) {
   const windowWidth = useWindowDimensions().width;
   const margin = 10;
   const width = windowWidth - 2 * margin;
@@ -295,14 +308,14 @@ function MoreInfo({user, setWord}: {user: userDetails, setWord: (word: string) =
               } years. ${entry.description !== null ? entry.description : ''}`;
             });
 
-          playText(text, (word) => setWord(word));
-        }}
-      />
-      <CustomButton
-        text="Education"
-        image={require('./../res/education.png')}
-        onPress={() => {
-          var text = '';
+            playText(text, word => setWord(word));
+          }}
+        />
+        <CustomButton
+          text="Education"
+          image={require('./../res/education.png')}
+          onPress={() => {
+            var text = '';
 
             user.educationHistory!.forEach(entry => {
               text += `I attended ${entry.institution} from ${dateToReadable(
@@ -310,25 +323,25 @@ function MoreInfo({user, setWord}: {user: userDetails, setWord: (word: string) =
               )} to ${dateToReadable(new Date(entry.endDate))}.`;
             });
 
-          playText(text, (word) => setWord(word));
-        }}
-      />
-      <CustomButton
-        text="Interests"
-        image={require('./../res/hobbies.png')}
-        onPress={() => {
-          var text = "I'm interested in ";
+            playText(text, word => setWord(word));
+          }}
+        />
+        <CustomButton
+          text="Interests"
+          image={require('./../res/hobbies.png')}
+          onPress={() => {
+            var text = "I'm interested in ";
 
             user.interests!.forEach(entry => {
               text += entry;
             });
 
-          playText(text, (word) => setWord(word));
-        }}
-      />
-    </View>
-  </>
-  )
+            playText(text, word => setWord(word));
+          }}
+        />
+      </View>
+    </>
+  );
 }
 
 function CustomButton({
@@ -384,10 +397,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-    borderRadius: 10,
-    borderWidth: 3,
-    borderColor: 'rgba(0, 0, 0, 0.5)',
+    // backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    // borderRadius: 10,
+    // borderWidth: 3,
+    // borderColor: 'rgba(0, 0, 0, 0.5)',
   },
   menuHeading: {
     color: 'white',
