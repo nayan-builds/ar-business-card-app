@@ -1,53 +1,61 @@
 const TextToSpeechV1 = require("ibm-watson/text-to-speech/v1");
-const { IamAuthenticator } = require("ibm-watson/auth");
+const { IamAuthenticator, IamTokenManager } = require("ibm-watson/auth");
+const WebSocket = require("ws");
 const fs = require("fs");
 
-function textToSpeech(req, res) {
-  const { text, voice } = req.body;
-  //   const audio = synthesizeTTS(text, voice);
-  //   console.log(audio);
-  //   res.send(audio);
+const tokenManager = new IamTokenManager({
+  apikey: process.env.IBM_API_KEY,
+});
 
-  //Test
-  fs.readFile("./hello_world.wav", function (err, result) {
-    res.send(result.toString("base64"));
-  });
+async function textToSpeech(req, res) {
+  const { text, voice } = req.body;
+  const audio = await synthesizeTTS(text, voice);
+  res.send(audio);
 }
 
 async function synthesizeTTS(text, voice = "en-GB_JamesV3Voice") {
-  const textToSpeech = new TextToSpeechV1({
-    authenticator: new IamAuthenticator({
-      apikey: process.env.IBM_API_KEY,
-    }),
-    serviceUrl: process.env.IBM_SERVICE_URL,
+  var timings = [];
+  var audio = Buffer.alloc(8);
+
+  return new Promise(async (resolve, reject) => {
+    var token = await tokenManager.getToken();
+    var websocket = new WebSocket(
+      `${process.env.IBM_SERVICE_URL}/v1/synthesize?access_token=${token}&voice=${voice}`
+    );
+
+    websocket.onopen = (e) => {
+      var message = {
+        text: text,
+        timings: ["words"],
+        accept: "audio/mp3",
+      };
+
+      websocket.send(JSON.stringify(message));
+    };
+
+    websocket.onmessage = (e) => {
+      var chunk = e.data;
+      if (typeof chunk === "string") {
+        try {
+          chunk = JSON.parse(chunk);
+          if (chunk.words) {
+            timings.push(...chunk.words);
+          }
+        } catch {
+          //
+        }
+      } else {
+        audio = Buffer.concat([audio, e.data]);
+      }
+    };
+
+    websocket.onclose = () => {
+      resolve({
+        timings: timings,
+        audio: audio.toString("base64"),
+      });
+    };
   });
-  console.log("✅ Connected to IBM Watson");
-
-  const synthesizeParams = {
-    text,
-    accept: "audio/wav",
-    voice,
-  };
-
-  // textToSpeech
-  //   .synthesize(synthesizeParams)
-  //   .then((response) => {
-  //     // The following line is necessary only for
-  //     // wav formats; otherwise, `response.result`
-  //     // can be directly piped to a file.
-  //     return textToSpeech.repairWavHeaderStream(response.result);
-  //   })
-  //   .then((buffer) => {
-  //     return buffer
-  //   })
-  //   .catch((err) => {
-  //     console.log("error:", err);
-  //   });
-
-  // return textToSpeech;
-
-  const audio = testAudio;
-  return audio;
 }
 
 module.exports = {
