@@ -3,7 +3,8 @@ import {
   ViroARScene,
   ViroARSceneNavigator,
   ViroAmbientLight,
-  ViroButton,
+  ViroAnimations,
+  ViroNode,
 } from '@viro-community/react-viro';
 import React, {useEffect, useState} from 'react';
 import {
@@ -13,7 +14,6 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  Touchable,
   TouchableOpacity,
   View,
   useWindowDimensions,
@@ -69,6 +69,8 @@ interface SceneARProps {
       user: userDetails;
       setUser: (user: userDetails) => void;
       setWord: (word: string) => void;
+      setTalking: (talking: boolean) => void;
+      talking: boolean;
     };
   };
 }
@@ -82,39 +84,35 @@ const dateToReadable = (date: Date) => {
   return date.toLocaleDateString('en-US', options);
 };
 
-const playText = async (text: string, onWord: (word: string) => void) => {
-  const response = await fetch(
-    'https://e3d4-143-52-126-93.ngrok-free.app/api/tts',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        text: text,
-        voice: 'en-GB_JamesV3Voice',
-      }),
+const playText = async (
+  text: string,
+  setTalking: (talking: boolean) => void,
+  onWord: (word: string) => void,
+) => {
+  const response = await fetch(process.env.API_URL + '/api/tts', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
-  );
-
+    body: JSON.stringify({
+      text: text,
+      voice: 'en-GB_JamesV3Voice',
+    }),
+  });
   const {audio, timings} = await response.json();
   if (!audio || !timings) return;
-
   const path = `${RNFS.TemporaryDirectoryPath}/audio.mp3`;
   await RNFS.writeFile(path, audio, 'base64');
-
   const sound = new Sound(path, '', error => {
     if (error) {
       console.log('failed to load sound', error);
       return;
     }
-
     //This is the length of each block of time in seconds,
     //If a word starts inside the current block, it will be
     //included in the subtitles
     const timeBlockLength = 1.5;
     let time = 0;
-
     setInterval(() => {
       sound.getCurrentTime((seconds, isPlaying) => {
         //This seems to keep playing even after the sound is finished?,
@@ -129,27 +127,28 @@ const playText = async (text: string, onWord: (word: string) => void) => {
           }
         }
         words = words.trim();
-
         //For some reason, this fixes the subtitles keeping the last word
         if (seconds >= sound.getDuration() - 0.01) words = '';
         if (isPlaying) onWord(words);
       });
     }, 300);
-
+    setTalking(true);
     sound.play(() => {
       //onEnd() callback
+      setTalking(false);
       onWord('');
     });
   });
 };
 
 const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
-  const {user, setUser, cardId, setWord} = sceneNavigator.viroAppProps;
+  const {user, setUser, cardId, setWord, talking, setTalking} =
+    sceneNavigator.viroAppProps;
 
   useEffect(() => {
     const fetchData = async () => {
       const response = await fetch(
-        `https://e3d4-143-52-126-93.ngrok-free.app/api/user/${cardId}`,
+        `${process.env.API_URL}/api/user/${cardId}`,
         {
           method: 'GET',
         },
@@ -166,30 +165,120 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
 
   useEffect(() => {
     if (user && Object.keys(user).length !== 0) {
-      playText(user.overview!, word => setWord(word));
+      playText(user.overview!, setTalking, word => setWord(word));
     }
   }, [user]);
+
+  const random = (min: number, max: number) => {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  };
+
+  const [spinning, setSpinning] = useState(false);
+
+  useEffect(() => {
+    // Animate randomly every 5-15 seconds
+    const handleTick = () => {
+      const nextTickAt = random(5000, 15000);
+
+      setTimeout(() => {
+        if (!talking) setSpinning(true);
+      }, nextTickAt);
+    };
+
+    if (!spinning && !talking) {
+      handleTick();
+    }
+  }, [spinning]);
 
   return (
     <ViroARScene>
       <ViroAmbientLight color="#ffffff" />
-      <Viro3DObject
-        source={require('./../res/r2d2.obj')}
-        resources={[require('./../res/r2d2.mtl')]}
-        highAccuracyEvents={true}
+      <ViroNode
         position={[0, -0.2, -0.3]}
-        scale={[1, 1, 1]}
-        rotation={[0, -90, 0]}
-        type="OBJ"
-      />
+        animation={{
+          name: 'spinAndJump',
+          run: spinning,
+          loop: false,
+          onFinish: () => {
+            setSpinning(false);
+          },
+        }}>
+        <ViroNode
+          animation={{
+            name: 'talk',
+            run: talking,
+            loop: true,
+          }}>
+          <Viro3DObject
+            source={require('./../res/r2d2.obj')}
+            resources={[require('./../res/r2d2.mtl')]}
+            highAccuracyEvents={true}
+            scale={[0, 0, 0]}
+            rotation={[0, 0, 0]}
+            type="OBJ"
+            animation={{name: 'grow', run: true, loop: false, delay: 1500}}
+          />
+        </ViroNode>
+      </ViroNode>
     </ViroARScene>
   );
 };
+
+ViroAnimations.registerAnimations({
+  spin: {
+    properties: {
+      rotateY: '+=360',
+    },
+    duration: 1000,
+    easing: 'EaseInEaseOut',
+  },
+  jumpUp: {
+    properties: {
+      positionY: '+=0.1',
+    },
+    duration: 500,
+    easing: 'EaseInEaseOut',
+  },
+  fallFromJump: {
+    properties: {
+      positionY: '-=0.1',
+    },
+    duration: 500,
+    easing: 'EaseInEaseOut',
+  },
+  jump: [['jumpUp', 'fallFromJump']],
+  spinAndJump: [['spin'], ['jump']],
+  rotateRight: {
+    properties: {
+      rotateY: '+=5',
+    },
+    duration: 50,
+    easing: 'EaseInEaseOut',
+  },
+  rotateLeft: {
+    properties: {
+      rotateY: '-=10',
+    },
+    duration: 100,
+    easing: 'EaseInEaseOut',
+  },
+  talk: [['rotateRight', 'rotateLeft', 'rotateRight']],
+  grow: {
+    properties: {
+      scaleX: '0.8',
+      scaleY: '0.8',
+      scaleZ: '0.8',
+    },
+    duration: 1500,
+    easing: 'EaseInEaseOut',
+  },
+});
 
 export default function Camera() {
   const [cardId, setCardId] = useState('');
   const [user, setUser] = useState<userDetails>({});
   const [word, setWord] = useState('');
+  const [talking, setTalking] = useState(false);
 
   const onRead = (e: BarCodeReadEvent) => {
     var data = e.data;
@@ -218,6 +307,8 @@ export default function Camera() {
             user: user,
             setUser,
             setWord,
+            setTalking,
+            talking,
           }}
         />
         <View style={{position: 'absolute', left: 0, bottom: -10}}>
@@ -243,7 +334,7 @@ export default function Camera() {
               </Text>
             </View>
           )}
-          <MoreInfo user={user} setWord={setWord} />
+          <MoreInfo user={user} setWord={setWord} setTalking={setTalking} />
         </View>
       </>
     );
@@ -253,9 +344,11 @@ export default function Camera() {
 function MoreInfo({
   user,
   setWord,
+  setTalking,
 }: {
   user: userDetails;
   setWord: (word: string) => void;
+  setTalking: (talking: boolean) => void;
 }) {
   const windowWidth = useWindowDimensions().width;
   const margin = 10;
@@ -330,7 +423,7 @@ function MoreInfo({
               } years. ${entry.description !== null ? entry.description : ''} `;
             });
 
-            playText(text, word => setWord(word));
+            playText(text, setTalking, word => setWord(word));
           }}
         />
         <CustomButton
@@ -353,7 +446,7 @@ function MoreInfo({
               )}. While there, I studied ${qualificationText}`;
             });
 
-            playText(text, word => setWord(word));
+            playText(text, setTalking, word => setWord(word));
           }}
         />
         <CustomButton
@@ -366,7 +459,7 @@ function MoreInfo({
               text += entry;
             });
 
-            playText(text, word => setWord(word));
+            playText(text, setTalking, word => setWord(word));
           }}
         />
       </View>
