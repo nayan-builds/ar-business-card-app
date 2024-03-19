@@ -89,56 +89,56 @@ const playText = async (
   setTalking: (talking: boolean) => void,
   onWord: (word: string) => void,
 ) => {
-  const response = await fetch(process.env.API_URL + '/api/tts', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      text: text,
-      voice: 'en-GB_JamesV3Voice',
-    }),
-  });
-  const {audio, timings} = await response.json();
-  if (!audio || !timings) return;
-  const path = `${RNFS.TemporaryDirectoryPath}/audio.mp3`;
-  await RNFS.writeFile(path, audio, 'base64');
-  const sound = new Sound(path, '', error => {
-    if (error) {
-      console.log('failed to load sound', error);
-      return;
-    }
-    //This is the length of each block of time in seconds,
-    //If a word starts inside the current block, it will be
-    //included in the subtitles
-    const timeBlockLength = 1.5;
-    let time = 0;
-    setInterval(() => {
-      sound.getCurrentTime((seconds, isPlaying) => {
-        //This seems to keep playing even after the sound is finished?,
-        //may need fixing somehow as may be repeating unnecessary code
-        let words = '';
-        if (seconds > time) {
-          time += timeBlockLength;
-        }
-        for (const timing of timings) {
-          if (time - timeBlockLength <= timing[1] && time > timing[1]) {
-            words += timing[0] + ' ';
-          }
-        }
-        words = words.trim();
-        //For some reason, this fixes the subtitles keeping the last word
-        if (seconds >= sound.getDuration() - 0.01) words = '';
-        if (isPlaying) onWord(words);
-      });
-    }, 300);
-    setTalking(true);
-    sound.play(() => {
-      //onEnd() callback
-      setTalking(false);
-      onWord('');
-    });
-  });
+  // const response = await fetch(process.env.API_URL + '/api/tts', {
+  //   method: 'POST',
+  //   headers: {
+  //     'Content-Type': 'application/json',
+  //   },
+  //   body: JSON.stringify({
+  //     text: text,
+  //     voice: 'en-GB_JamesV3Voice',
+  //   }),
+  // });
+  // const {audio, timings} = await response.json();
+  // if (!audio || !timings) return;
+  // const path = `${RNFS.TemporaryDirectoryPath}/audio.mp3`;
+  // await RNFS.writeFile(path, audio, 'base64');
+  // const sound = new Sound(path, '', error => {
+  //   if (error) {
+  //     console.log('failed to load sound', error);
+  //     return;
+  //   }
+  //   //This is the length of each block of time in seconds,
+  //   //If a word starts inside the current block, it will be
+  //   //included in the subtitles
+  //   const timeBlockLength = 1.5;
+  //   let time = 0;
+  //   setInterval(() => {
+  //     sound.getCurrentTime((seconds, isPlaying) => {
+  //       //This seems to keep playing even after the sound is finished?,
+  //       //may need fixing somehow as may be repeating unnecessary code
+  //       let words = '';
+  //       if (seconds > time) {
+  //         time += timeBlockLength;
+  //       }
+  //       for (const timing of timings) {
+  //         if (time - timeBlockLength <= timing[1] && time > timing[1]) {
+  //           words += timing[0] + ' ';
+  //         }
+  //       }
+  //       words = words.trim();
+  //       //For some reason, this fixes the subtitles keeping the last word
+  //       if (seconds >= sound.getDuration() - 0.01) words = '';
+  //       if (isPlaying) onWord(words);
+  //     });
+  //   }, 300);
+  //   setTalking(true);
+  //   sound.play(() => {
+  //     //onEnd() callback
+  //     setTalking(false);
+  //     onWord('');
+  //   });
+  // });
 };
 
 const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
@@ -174,21 +174,32 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
   };
 
   const [spinning, setSpinning] = useState(false);
+  const [walking, setWalking] = useState(false);
+  const [runTalkingAnimation, setRunTalkingAnimation] = useState(false);
 
   useEffect(() => {
-    // Animate randomly every 5-15 seconds
+    // Animate randomly every 5-10 seconds
     const handleTick = () => {
-      const nextTickAt = random(5000, 15000);
+      const nextTickAt = random(5000, 10000);
 
       setTimeout(() => {
-        if (!talking) setSpinning(true);
+        if (!talking) {
+          const idleAnimationControllers = [setSpinning, setWalking];
+          idleAnimationControllers[
+            random(0, idleAnimationControllers.length - 1)
+          ](true);
+        }
       }, nextTickAt);
     };
 
     if (!spinning && !talking) {
       handleTick();
     }
-  }, [spinning]);
+
+    if (talking) {
+      setRunTalkingAnimation(true);
+    }
+  }, [spinning, talking]);
 
   return (
     <ViroARScene>
@@ -205,19 +216,34 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
         }}>
         <ViroNode
           animation={{
-            name: 'talk',
-            run: talking,
-            loop: true,
+            name: 'walk',
+            run: walking,
+            loop: false,
+            onFinish: () => {
+              setWalking(false);
+            },
           }}>
-          <Viro3DObject
-            source={require('./../res/r2d2.obj')}
-            resources={[require('./../res/r2d2.mtl')]}
-            highAccuracyEvents={true}
-            scale={[0, 0, 0]}
-            rotation={[0, 0, 0]}
-            type="OBJ"
-            animation={{name: 'grow', run: true, loop: false, delay: 1500}}
-          />
+          <ViroNode
+            animation={{
+              name: 'talk',
+              run: runTalkingAnimation,
+              loop: true,
+              onFinish: () => {
+                // Finish current loop before stopping the animation
+                // So the model faces forwards still
+                if (!talking) setRunTalkingAnimation(false);
+              },
+            }}>
+            <Viro3DObject
+              source={require('./../res/r2d2.obj')}
+              resources={[require('./../res/r2d2.mtl')]}
+              highAccuracyEvents={true}
+              scale={[0, 0, 0]}
+              rotation={[0, 0, 0]}
+              type="OBJ"
+              animation={{name: 'grow', run: true, loop: false, delay: 1500}}
+            />
+          </ViroNode>
         </ViroNode>
       </ViroNode>
     </ViroARScene>
@@ -272,6 +298,46 @@ ViroAnimations.registerAnimations({
     duration: 1500,
     easing: 'EaseInEaseOut',
   },
+  walkForwardRight: {
+    properties: {
+      positionZ: '+=0.1',
+      rotateY: '-=10',
+    },
+    duration: 1000,
+    easing: 'EaseInEaseOut',
+  },
+  walkBackwardRight: {
+    properties: {
+      positionZ: '-=0.1',
+      rotateY: '+=10',
+    },
+    duration: 1000,
+    easing: 'EaseIn',
+  },
+  walkForwardLeft: {
+    properties: {
+      positionZ: '+=0.1',
+      rotateY: '+=10',
+    },
+    duration: 1000,
+    easing: 'EaseInEaseOut',
+  },
+  walkBackwardLeft: {
+    properties: {
+      positionZ: '-=0.1',
+      rotateY: '-=10',
+    },
+    duration: 1000,
+    easing: 'EaseOut',
+  },
+  walk: [
+    [
+      'walkForwardRight',
+      'walkBackwardRight',
+      'walkBackwardLeft',
+      'walkForwardLeft',
+    ],
+  ],
 });
 
 export default function Camera() {
@@ -334,6 +400,7 @@ export default function Camera() {
               </Text>
             </View>
           )}
+
           <MoreInfo user={user} setWord={setWord} setTalking={setTalking} />
         </View>
       </>
