@@ -1,4 +1,4 @@
-import {AudioRecorder, AudioUtils} from 'react-native-audio';
+import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import Voice from '@react-native-community/voice';
 import {
   Viro3DObject,
@@ -76,6 +76,8 @@ interface SceneARProps {
   };
 }
 // Audio Recording
+const audioRecorderPlayer = new AudioRecorderPlayer();
+
 function RecordButton() {
   const [isRecording, setIsRecording] = useState(false);
   const [audioPath, setAudioPath] = useState('');
@@ -84,15 +86,8 @@ function RecordButton() {
   // Starts the audio recording
   const startRecording = async () => {
     try {
-      const path = `${AudioUtils.DocumentDirectoryPath}/test.aac`;
-      await AudioRecorder.prepareRecordingAtPath(path, {
-        SampleRate: 22050,
-        Channels: 1,
-        AudioQuality: 'Low',
-        AudioEncoding: 'aac',
-        AudioEncodingBitRate: 32000,
-      });
-      await AudioRecorder.startRecording();
+      const path = 'test.aac'; // Change the file name and path as needed
+      await audioRecorderPlayer.startRecorder(path);
       setAudioPath(path);
       setIsRecording(true);
     } catch (error) {
@@ -103,20 +98,11 @@ function RecordButton() {
   // Stops the audio recording
   const stopRecording = async () => {
     try {
-      const audioFile = await AudioRecorder.stopRecording();
+      const result = await audioRecorderPlayer.stopRecorder();
       setIsRecording(false);
-      setAudioPath(audioFile);
+      setAudioPath(result);
     } catch (error) {
       console.error('Failed to stop recording:', error);
-    }
-  };
-
-  // Convert the recorded audio to text
-  const convertAudioToText = async () => {
-    try {
-      Voice.start('en-US');
-    } catch (error) {
-      console.error('Failed to start voice recognition:', error);
     }
   };
 
