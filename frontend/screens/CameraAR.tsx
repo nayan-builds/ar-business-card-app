@@ -172,21 +172,32 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
   };
 
   const [spinning, setSpinning] = useState(false);
+  const [walking, setWalking] = useState(false);
+  const [runTalkingAnimation, setRunTalkingAnimation] = useState(false);
 
   useEffect(() => {
-    // Animate randomly every 5-15 seconds
+    // Animate randomly every 5-10 seconds
     const handleTick = () => {
-      const nextTickAt = random(5000, 15000);
+      const nextTickAt = random(5000, 10000);
 
       setTimeout(() => {
-        if (!talking) setSpinning(true);
+        if (!talking) {
+          const idleAnimationControllers = [setSpinning, setWalking];
+          idleAnimationControllers[
+            random(0, idleAnimationControllers.length - 1)
+          ](true);
+        }
       }, nextTickAt);
     };
 
     if (!spinning && !talking) {
       handleTick();
     }
-  }, [spinning]);
+
+    if (talking) {
+      setRunTalkingAnimation(true);
+    }
+  }, [spinning, talking]);
 
   return (
     <ViroARScene>
@@ -203,19 +214,34 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
         }}>
         <ViroNode
           animation={{
-            name: 'talk',
-            run: talking,
-            loop: true,
+            name: 'walk',
+            run: walking,
+            loop: false,
+            onFinish: () => {
+              setWalking(false);
+            },
           }}>
-          <Viro3DObject
-            source={require('./../res/r2d2.obj')}
-            resources={[require('./../res/r2d2.mtl')]}
-            highAccuracyEvents={true}
-            scale={[0, 0, 0]}
-            rotation={[0, 0, 0]}
-            type="OBJ"
-            animation={{name: 'grow', run: true, loop: false, delay: 1500}}
-          />
+          <ViroNode
+            animation={{
+              name: 'talk',
+              run: runTalkingAnimation,
+              loop: true,
+              onFinish: () => {
+                // Finish current loop before stopping the animation
+                // So the model faces forwards still
+                if (!talking) setRunTalkingAnimation(false);
+              },
+            }}>
+            <Viro3DObject
+              source={require('./../res/r2d2.obj')}
+              resources={[require('./../res/r2d2.mtl')]}
+              highAccuracyEvents={true}
+              scale={[0, 0, 0]}
+              rotation={[0, 0, 0]}
+              type="OBJ"
+              animation={{name: 'grow', run: true, loop: false, delay: 1500}}
+            />
+          </ViroNode>
         </ViroNode>
       </ViroNode>
     </ViroARScene>
@@ -270,6 +296,46 @@ ViroAnimations.registerAnimations({
     duration: 1500,
     easing: 'EaseInEaseOut',
   },
+  walkForwardRight: {
+    properties: {
+      positionZ: '+=0.1',
+      rotateY: '-=10',
+    },
+    duration: 1000,
+    easing: 'EaseInEaseOut',
+  },
+  walkBackwardRight: {
+    properties: {
+      positionZ: '-=0.1',
+      rotateY: '+=10',
+    },
+    duration: 1000,
+    easing: 'EaseIn',
+  },
+  walkForwardLeft: {
+    properties: {
+      positionZ: '+=0.1',
+      rotateY: '+=10',
+    },
+    duration: 1000,
+    easing: 'EaseInEaseOut',
+  },
+  walkBackwardLeft: {
+    properties: {
+      positionZ: '-=0.1',
+      rotateY: '-=10',
+    },
+    duration: 1000,
+    easing: 'EaseOut',
+  },
+  walk: [
+    [
+      'walkForwardRight',
+      'walkBackwardRight',
+      'walkBackwardLeft',
+      'walkForwardLeft',
+    ],
+  ],
 });
 
 export default function Camera() {
@@ -332,6 +398,7 @@ export default function Camera() {
               </Text>
             </View>
           )}
+
           <MoreInfo user={user} setWord={setWord} setTalking={setTalking} />
         </View>
       </>
