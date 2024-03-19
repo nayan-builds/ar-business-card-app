@@ -16,9 +16,11 @@ app.use((req, res, next) => {
 //routes
 const userRouter = require("./routes/user-router");
 const ttsRouter = require("./routes/tts-router");
+const sttRouter = require("./routes/stt-router");
 
 app.use("/api/user/", userRouter);
 app.use("/api/tts/", ttsRouter);
+app.use("/api/stt/", sttRouter);
 
 // 404
 app.use((req, res) => {
