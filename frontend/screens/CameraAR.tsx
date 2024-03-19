@@ -1,3 +1,4 @@
+import {API_URL} from '@env';
 import {
   Viro3DObject,
   ViroARScene,
@@ -89,7 +90,7 @@ const playText = async (
   setTalking: (talking: boolean) => void,
   onWord: (word: string) => void,
 ) => {
-  const response = await fetch(process.env.API_URL + '/api/tts', {
+  const response = await fetch(API_URL + '/api/tts', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -147,12 +148,9 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch(
-        `${process.env.API_URL}/api/user/${cardId}`,
-        {
-          method: 'GET',
-        },
-      );
+      const response = await fetch(`${API_URL}/api/user/${cardId}`, {
+        method: 'GET',
+      });
 
       const data = await response.json();
       if (data.success) {
