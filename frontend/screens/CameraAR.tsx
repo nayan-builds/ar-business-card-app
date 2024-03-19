@@ -1,3 +1,4 @@
+import {API_URL} from '@env';
 import {
   Viro3DObject,
   ViroARScene,
@@ -89,56 +90,56 @@ const playText = async (
   setTalking: (talking: boolean) => void,
   onWord: (word: string) => void,
 ) => {
-  // const response = await fetch(process.env.API_URL + '/api/tts', {
-  //   method: 'POST',
-  //   headers: {
-  //     'Content-Type': 'application/json',
-  //   },
-  //   body: JSON.stringify({
-  //     text: text,
-  //     voice: 'en-GB_JamesV3Voice',
-  //   }),
-  // });
-  // const {audio, timings} = await response.json();
-  // if (!audio || !timings) return;
-  // const path = `${RNFS.TemporaryDirectoryPath}/audio.mp3`;
-  // await RNFS.writeFile(path, audio, 'base64');
-  // const sound = new Sound(path, '', error => {
-  //   if (error) {
-  //     console.log('failed to load sound', error);
-  //     return;
-  //   }
-  //   //This is the length of each block of time in seconds,
-  //   //If a word starts inside the current block, it will be
-  //   //included in the subtitles
-  //   const timeBlockLength = 1.5;
-  //   let time = 0;
-  //   setInterval(() => {
-  //     sound.getCurrentTime((seconds, isPlaying) => {
-  //       //This seems to keep playing even after the sound is finished?,
-  //       //may need fixing somehow as may be repeating unnecessary code
-  //       let words = '';
-  //       if (seconds > time) {
-  //         time += timeBlockLength;
-  //       }
-  //       for (const timing of timings) {
-  //         if (time - timeBlockLength <= timing[1] && time > timing[1]) {
-  //           words += timing[0] + ' ';
-  //         }
-  //       }
-  //       words = words.trim();
-  //       //For some reason, this fixes the subtitles keeping the last word
-  //       if (seconds >= sound.getDuration() - 0.01) words = '';
-  //       if (isPlaying) onWord(words);
-  //     });
-  //   }, 300);
-  //   setTalking(true);
-  //   sound.play(() => {
-  //     //onEnd() callback
-  //     setTalking(false);
-  //     onWord('');
-  //   });
-  // });
+  const response = await fetch(API_URL + '/api/tts', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      text: text,
+      voice: 'en-GB_JamesV3Voice',
+    }),
+  });
+  const {audio, timings} = await response.json();
+  if (!audio || !timings) return;
+  const path = `${RNFS.TemporaryDirectoryPath}/audio.mp3`;
+  await RNFS.writeFile(path, audio, 'base64');
+  const sound = new Sound(path, '', error => {
+    if (error) {
+      console.log('failed to load sound', error);
+      return;
+    }
+    //This is the length of each block of time in seconds,
+    //If a word starts inside the current block, it will be
+    //included in the subtitles
+    const timeBlockLength = 1.5;
+    let time = 0;
+    setInterval(() => {
+      sound.getCurrentTime((seconds, isPlaying) => {
+        //This seems to keep playing even after the sound is finished?,
+        //may need fixing somehow as may be repeating unnecessary code
+        let words = '';
+        if (seconds > time) {
+          time += timeBlockLength;
+        }
+        for (const timing of timings) {
+          if (time - timeBlockLength <= timing[1] && time > timing[1]) {
+            words += timing[0] + ' ';
+          }
+        }
+        words = words.trim();
+        //For some reason, this fixes the subtitles keeping the last word
+        if (seconds >= sound.getDuration() - 0.01) words = '';
+        if (isPlaying) onWord(words);
+      });
+    }, 300);
+    setTalking(true);
+    sound.play(() => {
+      //onEnd() callback
+      setTalking(false);
+      onWord('');
+    });
+  });
 };
 
 const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
@@ -147,12 +148,9 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch(
-        `${process.env.API_URL}/api/user/${cardId}`,
-        {
-          method: 'GET',
-        },
-      );
+      const response = await fetch(`${API_URL}/api/user/${cardId}`, {
+        method: 'GET',
+      });
 
       const data = await response.json();
       if (data.success) {
