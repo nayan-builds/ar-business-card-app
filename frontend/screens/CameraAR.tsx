@@ -1,3 +1,5 @@
+import {AudioRecorder, AudioUtils} from 'react-native-audio';
+import Voice from '@react-native-community/voice';
 import {
   Viro3DObject,
   ViroARScene,
@@ -7,6 +9,7 @@ import {
 } from '@viro-community/react-viro';
 import React, {useEffect, useState} from 'react';
 import {
+  Button,
   Image,
   ImageSourcePropType,
   Linking,
@@ -71,6 +74,69 @@ interface SceneARProps {
       setWord: (word: string) => void;
     };
   };
+}
+// Audio Recording
+function RecordButton() {
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioPath, setAudioPath] = useState('');
+  const [convertedText, setConvertedText] = useState('');
+
+  // Starts the audio recording
+  const startRecording = async () => {
+    try {
+      const path = `${AudioUtils.DocumentDirectoryPath}/test.aac`;
+      await AudioRecorder.prepareRecordingAtPath(path, {
+        SampleRate: 22050,
+        Channels: 1,
+        AudioQuality: 'Low',
+        AudioEncoding: 'aac',
+        AudioEncodingBitRate: 32000,
+      });
+      await AudioRecorder.startRecording();
+      setAudioPath(path);
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Failed to start recording:', error);
+    }
+  };
+
+  // Stops the audio recording
+  const stopRecording = async () => {
+    try {
+      const audioFile = await AudioRecorder.stopRecording();
+      setIsRecording(false);
+      setAudioPath(audioFile);
+    } catch (error) {
+      console.error('Failed to stop recording:', error);
+    }
+  };
+
+  // Convert the recorded audio to text
+  const convertAudioToText = async () => {
+    try {
+      Voice.start('en-US');
+    } catch (error) {
+      console.error('Failed to start voice recognition:', error);
+    }
+  };
+
+  return (
+    <TouchableOpacity
+      onPress={() => {
+        isRecording ? startRecording : stopRecording;
+      }}>
+      <Image
+        source={require('./../res/mic-icon.png')}
+        style={{
+          width: 50,
+          height: 50,
+          margin: 10,
+          backgroundColor: 'red',
+          borderRadius: 15,
+        }}
+      />
+    </TouchableOpacity>
+  );
 }
 
 const dateToReadable = (date: Date) => {
@@ -243,6 +309,7 @@ export default function Camera() {
               </Text>
             </View>
           )}
+          <RecordButton />
           <MoreInfo user={user} setWord={setWord} />
         </View>
       </>
