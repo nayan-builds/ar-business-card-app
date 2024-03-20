@@ -167,37 +167,32 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
     }
   }, [user]);
 
-  const random = (min: number, max: number) => {
-    return Math.floor(Math.random() * (max - min + 1) + min);
-  };
-
-  const [spinning, setSpinning] = useState(false);
-  const [walking, setWalking] = useState(false);
-  const [runTalkingAnimation, setRunTalkingAnimation] = useState(false);
+  const [currentAnimation, setCurrentAnimation] = useState(idleAnimations[0]);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isTalkingAnimationPlaying, setIsTalkingAnimationPlaying] =
+    useState(false);
 
   useEffect(() => {
-    // Animate randomly every 5-10 seconds
-    const handleTick = () => {
-      const nextTickAt = random(5000, 10000);
+    const animationInterval = setInterval(() => {
+      if (!isAnimating && !isTalkingAnimationPlaying) {
+        setIsAnimating(true);
+        const randomIndex = Math.floor(Math.random() * idleAnimations.length);
+        setCurrentAnimation(idleAnimations[randomIndex]);
+        setIsAnimating(false);
+      }
+    }, randomInterval(5000, 10000));
 
-      setTimeout(() => {
-        if (!talking) {
-          const idleAnimationControllers = [setSpinning, setWalking];
-          idleAnimationControllers[
-            random(0, idleAnimationControllers.length - 1)
-          ](true);
-        }
-      }, nextTickAt);
-    };
+    return () => clearInterval(animationInterval);
+  }, [isAnimating, isTalkingAnimationPlaying]);
 
-    if (!spinning && !talking) {
-      handleTick();
-    }
+  useEffect(() => {
+    setIsTalkingAnimationPlaying(talking);
+    setCurrentAnimation('talk');
+  }, [talking]);
 
-    if (talking) {
-      setRunTalkingAnimation(true);
-    }
-  }, [spinning, talking]);
+  const randomInterval = (min: number, max: number) => {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  };
 
   return (
     <ViroARScene>
@@ -205,48 +200,32 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
       <ViroNode
         position={[0, -0.2, -0.3]}
         animation={{
-          name: 'spinAndJump',
-          run: spinning,
+          name: currentAnimation,
+          run: true,
           loop: false,
-          onFinish: () => {
-            setSpinning(false);
-          },
         }}>
         <ViroNode
           animation={{
-            name: 'walk',
-            run: walking,
-            loop: false,
-            onFinish: () => {
-              setWalking(false);
-            },
+            name: 'talk',
+            run: isTalkingAnimationPlaying,
+            loop: true,
           }}>
-          <ViroNode
-            animation={{
-              name: 'talk',
-              run: runTalkingAnimation,
-              loop: true,
-              onFinish: () => {
-                // Finish current loop before stopping the animation
-                // So the model faces forwards still
-                if (!talking) setRunTalkingAnimation(false);
-              },
-            }}>
-            <Viro3DObject
-              source={require('./../res/r2d2.obj')}
-              resources={[require('./../res/r2d2.mtl')]}
-              highAccuracyEvents={true}
-              scale={[0, 0, 0]}
-              rotation={[0, 0, 0]}
-              type="OBJ"
-              animation={{name: 'grow', run: true, loop: false, delay: 1500}}
-            />
-          </ViroNode>
+          <Viro3DObject
+            source={require('./../res/r2d2.obj')}
+            resources={[require('./../res/r2d2.mtl')]}
+            highAccuracyEvents={true}
+            scale={[0, 0, 0]}
+            rotation={[0, 0, 0]}
+            type="OBJ"
+            animation={{name: 'grow', run: true, loop: false, delay: 1500}}
+          />
         </ViroNode>
       </ViroNode>
     </ViroARScene>
   );
 };
+
+const idleAnimations = ['spin', 'spinAndJump', 'walk'];
 
 ViroAnimations.registerAnimations({
   spin: {
@@ -296,46 +275,19 @@ ViroAnimations.registerAnimations({
     duration: 1500,
     easing: 'EaseInEaseOut',
   },
-  walkForwardRight: {
+  walkForward: {
     properties: {
       positionZ: '+=0.1',
-      rotateY: '-=10',
     },
     duration: 1000,
-    easing: 'EaseInEaseOut',
   },
-  walkBackwardRight: {
+  walkBackward: {
     properties: {
       positionZ: '-=0.1',
-      rotateY: '+=10',
     },
     duration: 1000,
-    easing: 'EaseIn',
   },
-  walkForwardLeft: {
-    properties: {
-      positionZ: '+=0.1',
-      rotateY: '+=10',
-    },
-    duration: 1000,
-    easing: 'EaseInEaseOut',
-  },
-  walkBackwardLeft: {
-    properties: {
-      positionZ: '-=0.1',
-      rotateY: '-=10',
-    },
-    duration: 1000,
-    easing: 'EaseOut',
-  },
-  walk: [
-    [
-      'walkForwardRight',
-      'walkBackwardRight',
-      'walkBackwardLeft',
-      'walkForwardLeft',
-    ],
-  ],
+  walk: [['walkForward', 'walkBackward', 'walkBackward', 'walkForward']],
 });
 
 export default function Camera() {
