@@ -20,7 +20,7 @@ const authRouter = require("./routes/auth-router");
 
 app.use("/api/user/", userRouter);
 app.use("/api/tts/", ttsRouter);
-app.user("/api/auth/", authRouter);
+app.use("/api/auth/", authRouter);
 
 // 404
 app.use((req, res) => {

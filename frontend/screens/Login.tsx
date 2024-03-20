@@ -1,20 +1,9 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
-import {useNavigation} from '@react-navigation/native';
-import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React from 'react';
+import React, {useState} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   Image,
   ImageProps,
   SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -22,13 +11,7 @@ import {
   View,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -74,9 +57,7 @@ function Section({
     </TouchableOpacity>
   );
 }
-function MainPage() {
-  const navigation = useNavigation();
-
+export default function Login() {
   return (
     <SafeAreaView style={styles.backgroundStyle}>
       <View style={styles.logoContainer}>
@@ -87,26 +68,8 @@ function MainPage() {
         />
       </View>
       <View>
-        <Section
-          title="Scan card"
-          image={require('../res/scan-qr-code.png')}
-          onPress={() => navigation.navigate('Camera')}>
-          Click here to scan the card
-        </Section>
-        <Section
-          title="Create Account"
-          image={require('../res/Create.png')}
-          onPress={() => navigation.navigate('CreateAccount')}>
-          Click here to create an Account
-        </Section>
-        <Section
-          title="Log in to account"
-          image={require('../res/log-in.png')}
-          onPress={() => navigation.navigate('Login')}>
+        <Section title="Log in to account" image={require('../res/log-in.png')}>
           Click here to Log in to account
-        </Section>
-        <Section title="Create card" image={require('../res/hand-card.png')}>
-          Click here to create a card
         </Section>
       </View>
     </SafeAreaView>
@@ -166,5 +129,3 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
 });
-
-export default MainPage;

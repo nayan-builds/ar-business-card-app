@@ -64,3 +64,5 @@ async function signUp(req, res) {
     });
   }
 }
+
+module.exports = { login, signUp };
