@@ -18,54 +18,11 @@ import {
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {useNavigation} from '@react-navigation/native';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-  image?: ImageProps;
-  onPress?: () => void;
-}>;
-
-function Section({
-  children,
-  title,
-  image,
-  onPress,
-}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  return (
-    <TouchableOpacity onPress={onPress}>
-      <View style={styles.sectionContainer}>
-        <View style={{justifyContent: 'center', alignItems: 'center'}}>
-          <Image source={image} style={styles.imageStyle} />
-        </View>
-        <View>
-          <Text
-            style={[
-              styles.sectionTitle,
-              {
-                color: isDarkMode ? Colors.white : Colors.black,
-              },
-            ]}>
-            {title}
-          </Text>
-          <Text
-            style={[
-              styles.sectionDescription,
-              {
-                color: isDarkMode ? Colors.light : Colors.dark,
-              },
-            ]}>
-            {children}
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  );
-}
 export default function CreateAccount() {
   const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const submit = async () => {
     const response = await fetch(`${API_URL}/api/auth/signup`, {
@@ -78,7 +35,7 @@ export default function CreateAccount() {
     const data = await response.json();
     if (!response.ok) {
       //Display error message
-      return console.log(data.message);
+      return setErrorMessage(data.message);
     }
     await EncryptedStorage.setItem('token', data.token);
     navigation.navigate('Home');
@@ -95,12 +52,15 @@ export default function CreateAccount() {
       <View>
         <TextInput
           placeholder="Please enter your email..."
+          style={styles.inputBox}
           onChangeText={text => {
             setEmail(text);
           }}
         />
         <TextInput
           placeholder="Please enter your password..."
+          style={styles.inputBox}
+          secureTextEntry={true}
           onChangeText={text => {
             setPassword(text);
           }}
@@ -111,6 +71,7 @@ export default function CreateAccount() {
             submit();
           }}
         />
+        <Text style={styles.errorMessage}>{errorMessage}</Text>
       </View>
     </SafeAreaView>
   );
@@ -133,39 +94,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: '90%',
   },
-  sectionContainer: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 32,
-    padding: 10,
-    borderWidth: 2,
-    borderRadius: 10,
-  },
-  sectionImageContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    minWidth: 50,
-  },
-
-  contactDetailsContainer: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 32,
-    padding: 10,
-    borderWidth: 1,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    fontSize: 18,
-    fontWeight: '400',
-  },
   highlight: {
     fontWeight: '700',
+  },
+  inputBox: {
+    width: 300,
+    height: 50,
+    backgroundColor: '#d3d3d3',
+    borderRadius: 25,
+    paddingHorizontal: 16,
+    fontSize: 16,
+    marginVertical: 10,
+  },
+  errorMessage: {
+    color: 'red',
   },
 });

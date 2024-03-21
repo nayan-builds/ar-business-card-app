@@ -24,7 +24,7 @@ async function checkLoggedIn(req, res) {
 async function login(req, res) {
   const { email, password } = req.body;
   try {
-    if (!email) throw Error("Login email is required");
+    if (!email) throw Error("Email is required");
     if (!password) throw Error("Password is required");
     let user = await userDB.findOne({ email });
     if (!user) throw Error("Incorrect credentials");
@@ -44,7 +44,7 @@ async function login(req, res) {
 async function signUp(req, res) {
   const { email, password } = req.body;
   try {
-    if (!email) throw Error("Login email is required");
+    if (!email) throw Error("Email is required");
     if (!password) throw Error("Password is required");
 
     //validate email

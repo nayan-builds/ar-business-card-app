@@ -151,7 +151,7 @@ function MainPage() {
               title="Logout"
               image={require('../res/logout.png')}
               onPress={async () => {
-                await EncryptedStorage.removeItem('TOKEN');
+                await EncryptedStorage.removeItem('token');
                 setIsLoggedIn(false);
               }}>
               Click here to logout
