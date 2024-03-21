@@ -47,8 +47,6 @@ export const getUser = async (id: string) => {
 };
 
 export const updateUser = async (id: string, user: IUserDetails) => {
-  console.log(user);
-
   return await (
     await fetch(`${BASE_URL}/api/user/${id}`, {
       method: 'PATCH',

@@ -8,8 +8,12 @@ import {
   View,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-
 import {IUserDetails, getUser, updateUser} from '../utilities/api';
+
+interface INotification {
+  text?: string;
+  color?: string;
+}
 
 const Input = ({
   text,
@@ -40,7 +44,10 @@ const Input = ({
 
 const ManageCard = () => {
   const [user, setUser] = useState<IUserDetails>();
-  const [notification, setNotification] = useState('Fetching user details!');
+  const [notification, setNotification] = useState<INotification>({
+    text: 'Fetching user details! 🚀',
+    color: '#f1c40f',
+  });
   const [id, setId] = useState('65d47f6b5ed28dd46bdf1e3e'); // TODO: fetch from authentication
 
   const updateUserState = (key: string, value: string) => {
@@ -56,7 +63,6 @@ const ManageCard = () => {
 
       if (data.success) {
         setUser(data.user);
-        setNotification('');
       }
     };
 
@@ -66,9 +72,9 @@ const ManageCard = () => {
   useEffect(() => {
     let timeout: NodeJS.Timeout;
 
-    if (notification.length > 0) {
+    if (notification.text && notification.text.length > 0) {
       timeout = setTimeout(() => {
-        setNotification('');
+        setNotification({});
       }, 1000);
     }
 
@@ -104,16 +110,20 @@ const ManageCard = () => {
               title="Update"
               onPress={() => {
                 updateUser(id, user);
-                setNotification('The card has been updated!');
+                setNotification({
+                  text: 'The card has been updated!',
+                  color: '#2ecc71',
+                });
               }}
             />
           </View>
         )}
       </View>
-      {notification.length > 0 && (
-        <View style={styles.notification}>
-          <Text style={{color: 'white'}}>{notification}</Text>
-          <Text style={{color: 'white'}} onPress={() => setNotification('')}>
+      {notification != null && (
+        <View
+          style={[styles.notification, {backgroundColor: notification.color}]}>
+          <Text style={{color: 'white'}}>{notification.text}</Text>
+          <Text style={{color: 'white'}} onPress={() => setNotification({})}>
             X
           </Text>
         </View>
@@ -131,7 +141,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     padding: 10,
-    backgroundColor: '#2ecc71',
     width: Dimensions.get('window').width,
     flexDirection: 'row',
     justifyContent: 'space-between',
