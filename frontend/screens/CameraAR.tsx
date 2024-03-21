@@ -211,8 +211,8 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
             loop: true,
           }}>
           <Viro3DObject
-            source={require('./../res/r2d2.obj')}
-            resources={[require('./../res/r2d2.mtl')]}
+            source={require('./../res/robot_.obj')}
+            resources={[require('./../res/robot_.mtl')]}
             highAccuracyEvents={true}
             scale={[0, 0, 0]}
             rotation={[0, 0, 0]}
