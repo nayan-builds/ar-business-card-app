@@ -1,5 +1,5 @@
 package com.frontend
-
+import package com.dooboolab.audiorecorderplayer.RNAudioRecorderPlayerPackage;
 import android.app.Application
 import com.facebook.react.PackageList
 import com.facebook.react.ReactApplication
@@ -13,7 +13,6 @@ import com.facebook.react.flipper.ReactNativeFlipper
 import com.facebook.soloader.SoLoader
 import com.viromedia.bridge.ReactViroPackage
 
-
 class MainApplication : Application(), ReactApplication {
 
   override val reactNativeHost: ReactNativeHost =
@@ -22,6 +21,7 @@ class MainApplication : Application(), ReactApplication {
             PackageList(this).packages.apply {
               // Packages that cannot be autolinked yet can be added manually here, for example:
               // add(MyReactNativePackage())
+              new RNAudioRecorderPlayerPackage()
               
               add(ReactViroPackage(ReactViroPackage.ViroPlatform.valueOf("AR")))
             }
