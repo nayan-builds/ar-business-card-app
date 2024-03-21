@@ -143,7 +143,7 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
   const [isAnimating, setIsAnimating] = useState(false);
   const [isTalkingAnimationPlaying, setIsTalkingAnimationPlaying] =
     useState(false);
-  const [model, setModel] = useState(models[0]);
+  const [modelId, setModelId] = useState(0);
 
   useEffect(() => {
     const animationInterval = setInterval(() => {
@@ -184,13 +184,16 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
             loop: true,
           }}>
           <Viro3DObject
-            source={model.source}
-            resources={model.resources.map(resource => resource)}
+            source={models[modelId].source}
+            resources={models[modelId].resources.map(resource => resource)}
             highAccuracyEvents={true}
             scale={[0, 0, 0]}
             rotation={[0, 0, 0]}
             type="OBJ"
             animation={{name: 'grow', run: true, loop: false, delay: 1500}}
+            onClick={() => {
+              setModelId(prevState => (prevState + 1) % models.length);
+            }}
           />
         </ViroNode>
       </ViroNode>
