@@ -2,9 +2,11 @@ import React, {useEffect, useState} from 'react';
 import {
   Button,
   Dimensions,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -28,7 +30,7 @@ const Input = ({
 }) => {
   return (
     <View style={{flexGrow: 1}}>
-      <Text>{text}</Text>
+      <Text style={{textTransform: 'capitalize'}}>{text}</Text>
       <TextInput
         style={{
           backgroundColor: 'white',
@@ -42,6 +44,77 @@ const Input = ({
   );
 };
 
+const ObjectViewer = <T extends object>({
+  title,
+  primary,
+  data,
+  updateState,
+}: {
+  title: string;
+  primary: string;
+  data: T[];
+  updateState: (key: string, value: string) => void;
+}) => {
+  const [selected, setSelected] = useState(-1);
+
+  return (
+    <View>
+      <Text>{title}</Text>
+      <View style={{flexDirection: 'row', gap: 10}}>
+        <Picker
+          style={{backgroundColor: 'white', flexGrow: 0.7}}
+          onValueChange={(value, index) => setSelected(value)}
+          selectedValue={selected}>
+          <Picker.Item label={'Select ' + title.toLowerCase()} value={-1} />
+          {data.map((entry: any, index) => (
+            <Picker.Item
+              label={`${entry[primary]} #${index + 1}`}
+              value={index}
+              key={index}
+            />
+          ))}
+        </Picker>
+        <View style={{flexGrow: 0.15}}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#2ecc71',
+              flex: 1,
+              justifyContent: 'center',
+            }}>
+            <Text style={{color: 'white', alignSelf: 'center'}}>+</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={{flexGrow: 0.15}}>
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#e74c3c',
+              flex: 1,
+              justifyContent: 'center',
+            }}>
+            <Text style={{color: 'white', alignSelf: 'center'}}>-</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+      {selected != -1
+        ? Object.keys(data[selected]).map(
+            key =>
+              key !== '_id' &&
+              key !== primary && (
+                <Input
+                  text={key}
+                  value={(data[selected] as any)[key]}
+                  key={key}
+                  onChangeText={value =>
+                    updateState(selected.toString() + '.' + key, value)
+                  }
+                />
+              ),
+          )
+        : null}
+    </View>
+  );
+};
+
 const ManageCard = () => {
   const [user, setUser] = useState<IUserDetails>();
   const [notification, setNotification] = useState<INotification>({
@@ -50,10 +123,23 @@ const ManageCard = () => {
   });
 
   const updateUserState = (key: string, value: string) => {
-    setUser(user => ({
-      ...user,
-      [key]: value,
-    }));
+    setUser(user => {
+      const keys = key.split('.');
+      const nestedUser = {...user};
+      let nestedObj: any = nestedUser;
+
+      for (let i = 0; i < keys.length - 1; i++) {
+        const currentKey = keys[i];
+        if (!(currentKey in nestedObj)) {
+          nestedObj[currentKey] = {};
+        }
+
+        nestedObj = nestedObj[currentKey];
+      }
+
+      nestedObj[keys[keys.length - 1]] = value;
+      return nestedUser;
+    });
   };
 
   useEffect(() => {
@@ -84,7 +170,7 @@ const ManageCard = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View>
+      <ScrollView>
         {user && (
           <View style={{gap: 10}}>
             <View style={{flexDirection: 'row', gap: 10}}>
@@ -105,6 +191,32 @@ const ManageCard = () => {
               multiline={true}
               onChangeText={text => updateUserState('overview', text)}
             />
+            <Input
+              text={'Email'}
+              value={user.contact?.email}
+              onChangeText={text => updateUserState('contact.email', text)}
+            />
+            <Input
+              text={'Phone Number'}
+              value={user.contact?.phone}
+              onChangeText={text => updateUserState('contact.phone', text)}
+            />
+            <ObjectViewer
+              title={'Work History'}
+              primary={'company'}
+              data={user.workHistory!}
+              updateState={(key, value) =>
+                updateUserState('workHistory.' + key, value)
+              }
+            />
+            <ObjectViewer
+              title={'Education History'}
+              primary={'institution'}
+              data={user.educationHistory!}
+              updateState={(key, value) =>
+                updateUserState('educationHistory.' + key, value)
+              }
+            />
             <Button
               title="Update"
               onPress={() => {
@@ -117,7 +229,7 @@ const ManageCard = () => {
             />
           </View>
         )}
-      </View>
+      </ScrollView>
       {notification != null && (
         <View
           style={[styles.notification, {backgroundColor: notification.color}]}>
