@@ -147,16 +147,6 @@ const styles = StyleSheet.create({
     minWidth: 50,
   },
 
-  contactDetailsContainer: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 32,
-    padding: 10,
-    borderWidth: 1,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   sectionTitle: {
     fontSize: 24,
     fontWeight: '600',
