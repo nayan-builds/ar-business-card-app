@@ -1,45 +1,29 @@
 import React, {useState} from 'react';
-import {API_URL} from '@env';
-import EncryptedStorage from 'react-native-encrypted-storage';
-import type {PropsWithChildren} from 'react';
 import {
   Button,
   Image,
-  ImageProps,
   SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity,
-  useColorScheme,
   View,
 } from 'react-native';
 
-import {Colors} from 'react-native/Libraries/NewAppScreen';
-import {useNavigation} from '@react-navigation/native';
+import {useAuth} from '../context/AuthContext';
 
 export default function CreateAccount() {
-  const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const {onRegister} = useAuth();
 
-  const submit = async () => {
-    const response = await fetch(`${API_URL}/api/auth/signup`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({email, password}),
-    });
-    const data = await response.json();
-    if (!response.ok) {
-      //Display error message
-      return setErrorMessage(data.message);
+  const register = async () => {
+    const response = await onRegister!(email, password);
+    if (response && response.error) {
+      setErrorMessage(response.message);
     }
-    await EncryptedStorage.setItem('token', data.token);
-    navigation.navigate('Home');
   };
+
   return (
     <SafeAreaView style={styles.backgroundStyle}>
       <View style={styles.logoContainer}>
@@ -68,7 +52,7 @@ export default function CreateAccount() {
         <Button
           title="Create Account"
           onPress={() => {
-            submit();
+            register();
           }}
         />
         <Text style={styles.errorMessage}>{errorMessage}</Text>

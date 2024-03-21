@@ -9,18 +9,6 @@ function createToken(id) {
   });
 }
 
-async function checkLoggedIn(req, res) {
-  if (req._user) {
-    return res
-      .status(200)
-      .json({ success: true, message: "User is logged in", user: req._user });
-  } else {
-    return res
-      .status(401)
-      .json({ success: false, message: "User is not logged in" });
-  }
-}
-
 async function login(req, res) {
   const { email, password } = req.body;
   try {

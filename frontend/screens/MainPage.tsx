@@ -1,6 +1,6 @@
 import {useNavigation} from '@react-navigation/native';
-import {API_URL} from '@env';
-import React, {useEffect, useState} from 'react';
+
+import React from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   Image,
@@ -15,8 +15,7 @@ import {
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 
-import EncryptedStorage from 'react-native-encrypted-storage';
-import {check} from 'react-native-permissions';
+import {useAuth} from '../context/AuthContext';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -64,49 +63,8 @@ function Section({
 }
 function MainPage() {
   const navigation = useNavigation();
+  const {authState, onLogout} = useAuth();
 
-  //This is using state to check if the user is logged in or not,
-  //This should be changed to context ideally
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', async () => {
-      const token = await EncryptedStorage.getItem('token');
-      console.log(token);
-      if (token) {
-        const response = await fetch(`${API_URL}/api/auth/check`, {
-          method: 'GET',
-          headers: {
-            Authorization: token,
-          },
-        });
-        if (response.ok) {
-          setIsLoggedIn(true);
-        }
-      }
-    });
-
-    return unsubscribe;
-  });
-
-  // useEffect(() => {
-  //   const checkLoggedIn = async () => {
-  //     const token = await EncryptedStorage.getItem('token');
-  //     console.log(token);
-  //     if (token) {
-  //       const response = await fetch(`${API_URL}/api/auth/check`, {
-  //         method: 'GET',
-  //         headers: {
-  //           Authorization: token,
-  //         },
-  //       });
-  //       if (response.ok) {
-  //         setIsLoggedIn(true);
-  //       }
-  //     }
-  //   };
-
-  //   checkLoggedIn();
-  // }, []);
   return (
     <SafeAreaView style={styles.backgroundStyle}>
       <View style={styles.logoContainer}>
@@ -123,7 +81,21 @@ function MainPage() {
           onPress={() => navigation.navigate('Camera')}>
           Click here to scan the card
         </Section>
-        {!isLoggedIn && (
+        {authState?.authenticated ? (
+          <>
+            <Section
+              title="Create card"
+              image={require('../res/hand-card.png')}>
+              Click here to create a card
+            </Section>
+            <Section
+              title="Logout"
+              image={require('../res/logout.png')}
+              onPress={onLogout}>
+              Click here to logout
+            </Section>
+          </>
+        ) : (
           <>
             <Section
               title="Create Account"
@@ -136,25 +108,6 @@ function MainPage() {
               image={require('../res/log-in.png')}
               onPress={() => navigation.navigate('Login')}>
               Click here to Log in to account
-            </Section>
-          </>
-        )}
-
-        {isLoggedIn && (
-          <>
-            <Section
-              title="Create card"
-              image={require('../res/hand-card.png')}>
-              Click here to create a card
-            </Section>
-            <Section
-              title="Logout"
-              image={require('../res/logout.png')}
-              onPress={async () => {
-                await EncryptedStorage.removeItem('token');
-                setIsLoggedIn(false);
-              }}>
-              Click here to logout
             </Section>
           </>
         )}
