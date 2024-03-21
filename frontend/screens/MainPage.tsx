@@ -84,9 +84,10 @@ function MainPage() {
         {authState?.authenticated ? (
           <>
             <Section
-              title="Create card"
-              image={require('../res/hand-card.png')}>
-              Click here to create a card
+              title="Manage card"
+              image={require('../res/hand-card.png')}
+              onPress={() => navigation.navigate('Manage Card')}>
+              Click here to manage your card
             </Section>
             <Section
               title="Logout"

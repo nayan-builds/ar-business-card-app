@@ -5,10 +5,14 @@ import Camera from './screens/CameraAR';
 import MyDetails from './screens/MyDetails';
 import ContactInfo from './screens/ContactInfo';
 import MainPage from './screens/MainPage';
+
 import CreateAccount from './screens/CreateAccount';
 import Login from './screens/Login';
 
 import {AuthProvider, useAuth} from './context/AuthContext';
+
+import ManageCard from './screens/ManageCard';
+
 
 const Stack = createNativeStackNavigator();
 
@@ -33,7 +37,7 @@ function Layout() {
         <Stack.Screen name="Camera" component={Camera} />
         {authState?.authenticated ? (
           <>
-            <Stack.Screen name="MyDetails" component={MyDetails} />
+            <Stack.Screen name="Manage Card" component={ManageCard} />
             <Stack.Screen name="ContactInfo" component={ContactInfo} />
           </>
         ) : (
