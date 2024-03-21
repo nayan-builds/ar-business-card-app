@@ -1,5 +1,5 @@
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
-import Voice from '@react-native-community/voice';
+
 import {
   Viro3DObject,
   ViroARScene,
@@ -9,6 +9,7 @@ import {
 } from '@viro-community/react-viro';
 import React, {useEffect, useState} from 'react';
 import {
+  Alert,
   Button,
   Image,
   ImageSourcePropType,
@@ -74,55 +75,6 @@ interface SceneARProps {
       setWord: (word: string) => void;
     };
   };
-}
-// Audio Recording
-const audioRecorderPlayer = new AudioRecorderPlayer();
-
-function RecordButton() {
-  const [isRecording, setIsRecording] = useState(false);
-  const [audioPath, setAudioPath] = useState('');
-  const [convertedText, setConvertedText] = useState('');
-
-  // Starts the audio recording
-  const startRecording = async () => {
-    try {
-      const path = 'test.aac'; // Change the file name and path as needed
-      await audioRecorderPlayer.startRecorder(path);
-      setAudioPath(path);
-      setIsRecording(true);
-    } catch (error) {
-      console.error('Failed to start recording:', error);
-    }
-  };
-
-  // Stops the audio recording
-  const stopRecording = async () => {
-    try {
-      const result = await audioRecorderPlayer.stopRecorder();
-      setIsRecording(false);
-      setAudioPath(result);
-    } catch (error) {
-      console.error('Failed to stop recording:', error);
-    }
-  };
-
-  return (
-    <TouchableOpacity
-      onPress={() => {
-        isRecording ? startRecording : stopRecording;
-      }}>
-      <Image
-        source={require('./../res/mic-icon.png')}
-        style={{
-          width: 50,
-          height: 50,
-          margin: 10,
-          backgroundColor: 'red',
-          borderRadius: 15,
-        }}
-      />
-    </TouchableOpacity>
-  );
 }
 
 const dateToReadable = (date: Date) => {
@@ -302,6 +254,59 @@ export default function Camera() {
     );
   }
 }
+
+const RecordButton = () => {
+  const [isRecording, setIsRecording] = useState(false);
+  const audioRecorderPlayer = new AudioRecorderPlayer();
+  let timeout: string | number | NodeJS.Timeout | undefined;
+
+  const startRecording = async () => {
+    const path = RNFS.DocumentDirectoryPath + '/tempRecording.aac';
+    const result = await audioRecorderPlayer.startRecorder(path);
+    console.log(result);
+    setIsRecording(true);
+
+    timeout = setTimeout(stopRecording, 10000);
+  };
+
+  const stopRecording = async () => {
+    clearTimeout(timeout);
+    const result = await audioRecorderPlayer.stopRecorder();
+    console.log(result);
+    setIsRecording(false);
+    const tempFilePath = RNFS.DocumentDirectoryPath + '/tempRecording.aac';
+    RNFS.readFile(tempFilePath, 'base64')
+      .then(audioData => {
+        // Send audioData to your backend
+        console.log('Audio data:', audioData);
+        // Here you can call your backend API to upload the audio data
+        // For example:
+        // uploadAudioToBackend(audioData);
+      })
+      .catch(error => {
+        console.error('Error reading temp file:', error);
+        Alert.alert('Error', 'Failed to read temp file');
+      });
+  };
+
+  return (
+    <TouchableOpacity
+      onPress={() => {
+        isRecording ? startRecording : stopRecording;
+      }}>
+      <Image
+        source={require('./../res/mic-icon.png')}
+        style={{
+          width: 50,
+          height: 50,
+          margin: 10,
+          backgroundColor: 'red',
+          borderRadius: 15,
+        }}
+      />
+    </TouchableOpacity>
+  );
+};
 
 function MoreInfo({
   user,
