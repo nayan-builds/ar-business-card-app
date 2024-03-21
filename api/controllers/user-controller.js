@@ -121,7 +121,7 @@ const createUser = async (req, res) => {
 
 const editUser = async (req, res) => {
   try {
-    const id = req._user._id;
+    const id = req.user._id;
     const body = req.body;
     const update = {};
     if (typeof body.firstName !== "undefined") {
@@ -153,6 +153,7 @@ const editUser = async (req, res) => {
     console.log("✅ Update user successfully");
     return res.status(201).json({ success: true, user });
   } catch (error) {
+    console.log(error);
     console.log("❌ Update user failed");
     return res.status(400).json({
       success: false,

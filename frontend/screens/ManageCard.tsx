@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {IUserDetails, getThisUser, updateUser} from '../utilities/api';
+import {Picker} from '@react-native-picker/picker';
 
 interface INotification {
   text?: string;
@@ -220,7 +221,7 @@ const ManageCard = () => {
             <Button
               title="Update"
               onPress={() => {
-                updateUser(id, user);
+                updateUser(user);
                 setNotification({
                   text: 'The card has been updated!',
                   color: '#2ecc71',

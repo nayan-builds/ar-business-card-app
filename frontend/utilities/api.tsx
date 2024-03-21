@@ -55,10 +55,6 @@ export const getThisUser = async () => {
 
 export const updateUser = async (user: IUserDetails) => {
   return await (
-    await fetch(`${API_URL}/api/user/`, {
-      method: 'PATCH',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(user),
-    })
-  ).json();
+    await axios.patch(`${API_URL}/api/user/`, user)
+  ).data;
 };

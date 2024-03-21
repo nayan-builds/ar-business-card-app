@@ -99,16 +99,16 @@ function MainPage() {
         ) : (
           <>
             <Section
-              title="Create Account"
+              title="Create account"
               image={require('../res/Create.png')}
               onPress={() => navigation.navigate('CreateAccount')}>
-              Click here to create an Account
+              Click here to create an account
             </Section>
             <Section
-              title="Log in to account"
+              title="Login to account"
               image={require('../res/log-in.png')}
               onPress={() => navigation.navigate('Login')}>
-              Click here to Log in to account
+              Click here to login to account
             </Section>
           </>
         )}
