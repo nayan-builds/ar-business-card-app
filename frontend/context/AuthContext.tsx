@@ -3,6 +3,8 @@ import axios from 'axios';
 import EncryptedStorage from 'react-native-encrypted-storage';
 import {API_URL} from '@env';
 
+//Help from https://www.youtube.com/watch?v=9vydY9SDtAo&ab_channel=SimonGrimm
+
 interface AuthProps {
   authState?: {token: string | null; authenticated: boolean | null};
   onRegister?: (email: string, password: string) => Promise<any>;
