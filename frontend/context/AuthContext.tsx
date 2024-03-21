@@ -1,7 +1,7 @@
 import {useContext, createContext, useEffect, useState} from 'react';
 import axios from 'axios';
 import EncryptedStorage from 'react-native-encrypted-storage';
-import {API_URL} from '@env';
+import {API_URL} from '../utilities/api';
 
 //Help from https://www.youtube.com/watch?v=9vydY9SDtAo&ab_channel=SimonGrimm
 

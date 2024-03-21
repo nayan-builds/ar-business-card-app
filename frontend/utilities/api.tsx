@@ -1,5 +1,7 @@
-import {API_URL} from '@env';
+import {API_BASE_URL} from '@env';
 import axios from 'axios';
+
+export const API_URL = API_BASE_URL;
 
 export class IWorkHistory {
   company: string = '';
