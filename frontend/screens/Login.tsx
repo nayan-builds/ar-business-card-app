@@ -1,11 +1,15 @@
 import React, {useState} from 'react';
+import {API_URL} from '@env';
+import EncryptedStorage from 'react-native-encrypted-storage';
 import type {PropsWithChildren} from 'react';
 import {
+  Button,
   Image,
   ImageProps,
   SafeAreaView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   useColorScheme,
   View,
@@ -57,7 +61,26 @@ function Section({
     </TouchableOpacity>
   );
 }
+
+//
 export default function Login() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const login = async () => {
+    const response = await fetch(`${API_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({email, password}),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      console.log(data.message);
+    }
+    await EncryptedStorage.setItem('token', data.token);
+  };
+
   return (
     <SafeAreaView style={styles.backgroundStyle}>
       <View style={styles.logoContainer}>
@@ -68,9 +91,24 @@ export default function Login() {
         />
       </View>
       <View>
-        <Section title="Log in to account" image={require('../res/log-in.png')}>
-          Click here to Log in to account
-        </Section>
+        <TextInput
+          placeholder="Please enter your email..."
+          onChangeText={text => {
+            setEmail(text);
+          }}
+        />
+        <TextInput
+          placeholder="Please enter your password..."
+          onChangeText={text => {
+            setPassword(text);
+          }}
+        />
+        <Button
+          title="Login"
+          onPress={() => {
+            login();
+          }}
+        />
       </View>
     </SafeAreaView>
   );

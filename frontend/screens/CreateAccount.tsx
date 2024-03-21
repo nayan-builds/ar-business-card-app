@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import {API_URL} from '@env';
+import EncryptedStorage from 'react-native-encrypted-storage';
 import type {PropsWithChildren} from 'react';
 import {
   Button,
@@ -72,6 +73,11 @@ export default function CreateAccount() {
       },
       body: JSON.stringify({email, password}),
     });
+    const data = await response.json();
+    if (!response.ok) {
+      console.log(data.message);
+    }
+    await EncryptedStorage.setItem('token', data.token);
   };
   return (
     <SafeAreaView style={styles.backgroundStyle}>

@@ -1,20 +1,11 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import {useNavigation} from '@react-navigation/native';
-import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React from 'react';
+import {API_URL} from '@env';
+import React, {useEffect, useState} from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   Image,
   ImageProps,
   SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -22,13 +13,10 @@ import {
   View,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
+
+import EncryptedStorage from 'react-native-encrypted-storage';
+import {check} from 'react-native-permissions';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -77,6 +65,48 @@ function Section({
 function MainPage() {
   const navigation = useNavigation();
 
+  //This is using state to check if the user is logged in or not,
+  //This should be changed to context ideally
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', async () => {
+      const token = await EncryptedStorage.getItem('token');
+      console.log(token);
+      if (token) {
+        const response = await fetch(`${API_URL}/api/auth/check`, {
+          method: 'GET',
+          headers: {
+            Authorization: token,
+          },
+        });
+        if (response.ok) {
+          setIsLoggedIn(true);
+        }
+      }
+    });
+
+    return unsubscribe;
+  });
+
+  // useEffect(() => {
+  //   const checkLoggedIn = async () => {
+  //     const token = await EncryptedStorage.getItem('token');
+  //     console.log(token);
+  //     if (token) {
+  //       const response = await fetch(`${API_URL}/api/auth/check`, {
+  //         method: 'GET',
+  //         headers: {
+  //           Authorization: token,
+  //         },
+  //       });
+  //       if (response.ok) {
+  //         setIsLoggedIn(true);
+  //       }
+  //     }
+  //   };
+
+  //   checkLoggedIn();
+  // }, []);
   return (
     <SafeAreaView style={styles.backgroundStyle}>
       <View style={styles.logoContainer}>
@@ -93,21 +123,41 @@ function MainPage() {
           onPress={() => navigation.navigate('Camera')}>
           Click here to scan the card
         </Section>
-        <Section
-          title="Create Account"
-          image={require('../res/Create.png')}
-          onPress={() => navigation.navigate('CreateAccount')}>
-          Click here to create an Account
-        </Section>
-        <Section
-          title="Log in to account"
-          image={require('../res/log-in.png')}
-          onPress={() => navigation.navigate('Login')}>
-          Click here to Log in to account
-        </Section>
-        <Section title="Create card" image={require('../res/hand-card.png')}>
-          Click here to create a card
-        </Section>
+        {!isLoggedIn && (
+          <>
+            <Section
+              title="Create Account"
+              image={require('../res/Create.png')}
+              onPress={() => navigation.navigate('CreateAccount')}>
+              Click here to create an Account
+            </Section>
+            <Section
+              title="Log in to account"
+              image={require('../res/log-in.png')}
+              onPress={() => navigation.navigate('Login')}>
+              Click here to Log in to account
+            </Section>
+          </>
+        )}
+
+        {isLoggedIn && (
+          <>
+            <Section
+              title="Create card"
+              image={require('../res/hand-card.png')}>
+              Click here to create a card
+            </Section>
+            <Section
+              title="Logout"
+              image={require('../res/logout.png')}
+              onPress={async () => {
+                await EncryptedStorage.removeItem('TOKEN');
+                setIsLoggedIn(false);
+              }}>
+              Click here to logout
+            </Section>
+          </>
+        )}
       </View>
     </SafeAreaView>
   );
