@@ -29,9 +29,11 @@ const contactSchema = new mongoose.Schema({
 });
 
 const userSchema = new mongoose.Schema({
-  firstName: { type: String, required: true, trim: true },
-  lastName: { type: String, required: true, trim: true },
-  overview: { type: String, required: true, trim: true },
+  email: { type: String, required: true, trim: true, unique: true },
+  password: { type: String, required: true, trim: true },
+  firstName: { type: String, required: false, trim: true },
+  lastName: { type: String, required: false, trim: true },
+  overview: { type: String, required: false, trim: true },
   workHistory: { type: [workHistorySchema], default: null, required: false },
   educationHistory: {
     type: [educationHistorySchema],

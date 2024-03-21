@@ -128,10 +128,22 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
     }
   }, [user]);
 
+  const models = [
+    {
+      source: require('./../res/r2d2.obj'),
+      resources: [require('./../res/r2d2.mtl')],
+    },
+    {
+      source: require('./../res/floatingrobot.obj'),
+      resources: [require('./../res/floatingrobot.mtl')],
+    },
+  ];
+
   const [currentAnimation, setCurrentAnimation] = useState(idleAnimations[0]);
   const [isAnimating, setIsAnimating] = useState(false);
   const [isTalkingAnimationPlaying, setIsTalkingAnimationPlaying] =
     useState(false);
+  const [model, setModel] = useState(models[0]);
 
   useEffect(() => {
     const animationInterval = setInterval(() => {
@@ -172,8 +184,8 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
             loop: true,
           }}>
           <Viro3DObject
-            source={require('./../res/r2d2.obj')}
-            resources={[require('./../res/r2d2.mtl')]}
+            source={model.source}
+            resources={model.resources.map(resource => resource)}
             highAccuracyEvents={true}
             scale={[0, 0, 0]}
             rotation={[0, 0, 0]}

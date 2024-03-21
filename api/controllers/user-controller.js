@@ -116,7 +116,7 @@ const createUser = async (req, res) => {
 
 const editUser = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req._user._id;
     const body = req.body;
     const update = {};
     if (typeof body.firstName !== "undefined") {
