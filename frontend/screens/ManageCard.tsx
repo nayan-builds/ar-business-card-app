@@ -10,7 +10,14 @@ import {
   View,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {IUserDetails, getThisUser, updateUser} from '../utilities/api';
+import {
+  IEducationHistory,
+  IUserDetails,
+  IWorkHistory,
+  getThisUser,
+  updateUser,
+  withDefaults,
+} from '../utilities/api';
 import {Picker} from '@react-native-picker/picker';
 
 interface INotification {
@@ -50,13 +57,24 @@ const ObjectViewer = <T extends object>({
   primary,
   data,
   updateState,
+  type,
 }: {
   title: string;
-  primary: string;
+  primary?: string;
   data: T[];
-  updateState: (key: string, value: string) => void;
+  updateState: (key: string, value: any) => void;
+  type?: {new (): object};
 }) => {
   const [selected, setSelected] = useState(-1);
+
+  const onAdd = () => {
+    const object = type == undefined ? '' : new type();
+    updateState((data.length + 1).toString(), object);
+  };
+
+  const onRemove = () => {
+    updateState(selected.toString(), null);
+  };
 
   return (
     <View>
@@ -67,13 +85,18 @@ const ObjectViewer = <T extends object>({
           onValueChange={(value, index) => setSelected(value)}
           selectedValue={selected}>
           <Picker.Item label={'Select ' + title.toLowerCase()} value={-1} />
-          {data.map((entry: any, index) => (
-            <Picker.Item
-              label={`${entry[primary]} #${index + 1}`}
-              value={index}
-              key={index}
-            />
-          ))}
+          {data.map(
+            (entry: any, index) =>
+              entry != null && (
+                <Picker.Item
+                  label={`${primary == undefined ? entry : entry[primary]} #${
+                    index + 1
+                  }`}
+                  value={index}
+                  key={index}
+                />
+              ),
+          )}
         </Picker>
         <View style={{flexGrow: 0.15}}>
           <TouchableOpacity
@@ -81,7 +104,8 @@ const ObjectViewer = <T extends object>({
               backgroundColor: '#2ecc71',
               flex: 1,
               justifyContent: 'center',
-            }}>
+            }}
+            onPress={onAdd}>
             <Text style={{color: 'white', alignSelf: 'center'}}>+</Text>
           </TouchableOpacity>
         </View>
@@ -91,16 +115,23 @@ const ObjectViewer = <T extends object>({
               backgroundColor: '#e74c3c',
               flex: 1,
               justifyContent: 'center',
-            }}>
+            }}
+            onPress={onRemove}>
             <Text style={{color: 'white', alignSelf: 'center'}}>-</Text>
           </TouchableOpacity>
         </View>
       </View>
-      {selected != -1
+      {selected != -1 && data[selected]
         ? Object.keys(data[selected]).map(
             key =>
               key !== '_id' &&
-              key !== primary && (
+              (Array.isArray(data[selected][key]) ? (
+                <ObjectViewer
+                  data={data[selected][key]}
+                  title={key}
+                  updateState={() => {}}
+                />
+              ) : (
                 <Input
                   text={key}
                   value={(data[selected] as any)[key]}
@@ -109,7 +140,7 @@ const ObjectViewer = <T extends object>({
                     updateState(selected.toString() + '.' + key, value)
                   }
                 />
-              ),
+              )),
           )
         : null}
     </View>
@@ -123,7 +154,7 @@ const ManageCard = () => {
     color: '#f1c40f',
   });
 
-  const updateUserState = (key: string, value: string) => {
+  const updateUserState = (key: string, value: any) => {
     setUser(user => {
       const keys = key.split('.');
       const nestedUser = {...user};
@@ -148,6 +179,7 @@ const ManageCard = () => {
       const data = await getThisUser();
 
       if (data.success) {
+        console.log(data.user);
         setUser(data.user);
       }
     };
@@ -209,6 +241,7 @@ const ManageCard = () => {
               updateState={(key, value) =>
                 updateUserState('workHistory.' + key, value)
               }
+              type={IWorkHistory}
             />
             <ObjectViewer
               title={'Education History'}
@@ -217,6 +250,7 @@ const ManageCard = () => {
               updateState={(key, value) =>
                 updateUserState('educationHistory.' + key, value)
               }
+              type={IEducationHistory}
             />
             <Button
               title="Update"

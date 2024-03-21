@@ -1,12 +1,12 @@
 import {API_URL} from '@env';
 import axios from 'axios';
 
-export interface IWorkHistory {
-  company: string;
-  position: string;
-  startDate: Date;
-  endDate: Date;
-  description: string;
+export class IWorkHistory {
+  company: string = '';
+  position: string = '';
+  startDate: Date = new Date();
+  endDate: Date = new Date();
+  description: string = '';
 }
 
 export interface IQualification {
@@ -15,12 +15,12 @@ export interface IQualification {
   grade: string;
 }
 
-export interface IEducationHistory {
-  institution: string;
-  qualifications: IQualification[];
-  startDate: Date;
-  endDate: Date;
-  description: string;
+export class IEducationHistory {
+  institution: string = '';
+  qualifications: IQualification[] = [];
+  startDate: Date = new Date();
+  endDate: Date = new Date();
+  description: string = '';
 }
 
 export interface IContactDetails {
@@ -48,6 +48,8 @@ export const getUser = async (id: string) => {
 };
 
 export const getThisUser = async () => {
+  console.log(API_URL);
+
   return await (
     await axios.get(`${API_URL}/api/user/`)
   ).data;
