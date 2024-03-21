@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
+import {useNavigation} from '@react-navigation/native';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -62,6 +63,7 @@ function Section({
   );
 }
 export default function CreateAccount() {
+  const navigation = useNavigation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -75,9 +77,11 @@ export default function CreateAccount() {
     });
     const data = await response.json();
     if (!response.ok) {
-      console.log(data.message);
+      //Display error message
+      return console.log(data.message);
     }
     await EncryptedStorage.setItem('token', data.token);
+    navigation.navigate('Home');
   };
   return (
     <SafeAreaView style={styles.backgroundStyle}>
