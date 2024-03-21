@@ -144,7 +144,6 @@ const editUser = async (req, res) => {
       update.contact = body.contact;
     }
 
-    console.log(update);
     const user = await userDB.findByIdAndUpdate(id, update, { new: true });
     console.log("✅ Update user successfully");
     return res.status(201).json({ success: true, user });

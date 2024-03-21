@@ -24,51 +24,16 @@ import QRCodeScanner from 'react-native-qrcode-scanner';
 
 import RNFS from 'react-native-fs';
 import Sound from 'react-native-sound';
+import {IUserDetails, getUser} from '../utilities/api';
 
 const CARD_SIGNATURE = 'CARD_';
-
-interface WorkHistory {
-  company: string;
-  position: string;
-  startDate: Date;
-  endDate: Date;
-  description: string;
-}
-
-interface qualification {
-  level: string;
-  name: string;
-  grade: string;
-}
-
-interface educationHistory {
-  institution: string;
-  qualifications: qualification[];
-  startDate: Date;
-  endDate: Date;
-  description: string;
-}
-
-interface contact {
-  email?: string;
-  linkedIn?: string;
-  phone?: string;
-}
-
-interface userDetails {
-  overview?: string;
-  workHistory?: WorkHistory[];
-  educationHistory?: educationHistory[];
-  interests?: string[];
-  contact?: contact;
-}
 
 interface SceneARProps {
   sceneNavigator: {
     viroAppProps: {
       cardId: string;
-      user: userDetails;
-      setUser: (user: userDetails) => void;
+      user: IUserDetails;
+      setUser: (user: IUserDetails) => void;
       setWord: (word: string) => void;
       setTalking: (talking: boolean) => void;
       talking: boolean;
@@ -148,11 +113,7 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch(`${API_URL}/api/user/${cardId}`, {
-        method: 'GET',
-      });
-
-      const data = await response.json();
+      const data = await getUser(cardId);
       if (data.success) {
         setUser(data.user);
       }
@@ -292,7 +253,7 @@ ViroAnimations.registerAnimations({
 
 export default function Camera() {
   const [cardId, setCardId] = useState('');
-  const [user, setUser] = useState<userDetails>({});
+  const [user, setUser] = useState<IUserDetails>({});
   const [word, setWord] = useState('');
   const [talking, setTalking] = useState(false);
 
@@ -363,7 +324,7 @@ function MoreInfo({
   setWord,
   setTalking,
 }: {
-  user: userDetails;
+  user: IUserDetails;
   setWord: (word: string) => void;
   setTalking: (talking: boolean) => void;
 }) {

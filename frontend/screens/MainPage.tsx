@@ -93,8 +93,11 @@ function MainPage() {
           onPress={() => navigation.navigate('Camera')}>
           Click here to scan the card
         </Section>
-        <Section title="Create card" image={require('../res/hand-card.png')}>
-          Click here to create a card
+        <Section
+          title="Manage card"
+          image={require('../res/hand-card.png')}
+          onPress={() => navigation.navigate('Manage Card')}>
+          Click here to manage your card
         </Section>
       </View>
     </SafeAreaView>
