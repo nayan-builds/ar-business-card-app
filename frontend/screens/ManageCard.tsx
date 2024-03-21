@@ -131,7 +131,7 @@ const ManageCard = () => {
 
       for (let i = 0; i < keys.length - 1; i++) {
         const currentKey = keys[i];
-        if (!(currentKey in nestedObj)) {
+        if (nestedObj[currentKey] == null) {
           nestedObj[currentKey] = {};
         }
 
