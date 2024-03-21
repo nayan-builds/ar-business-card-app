@@ -3,15 +3,14 @@ const userDB = require("../schema/user-schema");
 
 const loggedOn = async (req, res, next) => {
   try {
-    const { Authorization } = req.headers;
-    if (!Authorization) {
+    const { authorization } = req.headers;
+    if (!authorization) {
       throw Error("You must send an authorization header");
     }
-    const token = Authorization;
-
+    const token = authorization.split(" ")[1];
     const { id } = jwt.verify(token, process.env.JWT_SECRET);
-    req._user = await userDB.findById(id).select("_id");
-    console.log(req._user._id);
+    req.user = await userDB.findById(id).select("_id");
+    console.log(req.user);
     next();
   } catch (error) {
     return res.status(401).json({ success: false, error: error.message });

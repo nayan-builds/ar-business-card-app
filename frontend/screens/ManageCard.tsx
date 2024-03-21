@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
-import {IUserDetails, getUser, updateUser} from '../utilities/api';
+import {IUserDetails, getThisUser, updateUser} from '../utilities/api';
 
 interface INotification {
   text?: string;
@@ -48,7 +48,6 @@ const ManageCard = () => {
     text: 'Fetching user details! 🚀',
     color: '#f1c40f',
   });
-  const [id, setId] = useState('65d47f6b5ed28dd46bdf1e3e'); // TODO: fetch from authentication
 
   const updateUserState = (key: string, value: string) => {
     setUser(user => ({
@@ -59,7 +58,7 @@ const ManageCard = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const data = await getUser(id);
+      const data = await getThisUser();
 
       if (data.success) {
         setUser(data.user);

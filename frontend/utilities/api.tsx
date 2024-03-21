@@ -1,4 +1,5 @@
-const BASE_URL = 'https://3094-82-32-220-251.ngrok-free.app';
+import {API_URL} from '@env';
+import axios from 'axios';
 
 export interface IWorkHistory {
   company: string;
@@ -40,15 +41,21 @@ export interface IUserDetails {
 
 export const getUser = async (id: string) => {
   return await (
-    await fetch(`${BASE_URL}/api/user/${id}`, {
+    await fetch(`${API_URL}/api/user/${id}`, {
       method: 'GET',
     })
   ).json();
 };
 
-export const updateUser = async (id: string, user: IUserDetails) => {
+export const getThisUser = async () => {
   return await (
-    await fetch(`${BASE_URL}/api/user/${id}`, {
+    await axios.get(`${API_URL}/api/user/`)
+  ).data;
+};
+
+export const updateUser = async (user: IUserDetails) => {
+  return await (
+    await fetch(`${API_URL}/api/user/`, {
       method: 'PATCH',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(user),

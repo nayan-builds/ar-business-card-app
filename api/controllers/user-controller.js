@@ -1,7 +1,11 @@
 const userDB = require("../schema/user-schema");
 
 const getUser = async (req, res) => {
-  const { id } = req.params;
+  let { id } = req.params;
+  if (!id) {
+    //From middleware
+    id = req.user._id;
+  }
   try {
     const user = await userDB.findById(id);
     if (!user) {
@@ -11,6 +15,7 @@ const getUser = async (req, res) => {
     return res.status(200).json({ success: true, user });
   } catch (error) {
     console.log("❌ Get user failed");
+    console.log(error);
     return res.status(400).json({
       success: false,
       message: error ? error.message : "Get user failed",
