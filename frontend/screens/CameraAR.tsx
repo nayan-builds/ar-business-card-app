@@ -336,7 +336,12 @@ export default function Camera() {
             </View>
           )}
 
-          <MoreInfo user={user} setWord={setWord} setTalking={setTalking} />
+          <MoreInfo
+            user={user}
+            setWord={setWord}
+            setTalking={setTalking}
+            talking={talking}
+          />
         </View>
       </>
     );
@@ -347,10 +352,12 @@ function MoreInfo({
   user,
   setWord,
   setTalking,
+  talking,
 }: {
   user: IUserDetails;
   setWord: (word: string) => void;
   setTalking: (talking: boolean) => void;
+  talking: boolean;
 }) {
   const windowWidth = useWindowDimensions().width;
   const margin = 10;
@@ -413,6 +420,7 @@ function MoreInfo({
         <CustomButton
           text="Work"
           image={require('./../res/work.png')}
+          disabled={talking}
           onPress={() => {
             var text = '';
 
@@ -431,6 +439,7 @@ function MoreInfo({
         <CustomButton
           text="Education"
           image={require('./../res/education.png')}
+          disabled={talking}
           onPress={() => {
             var text = '';
 
@@ -454,6 +463,7 @@ function MoreInfo({
         <CustomButton
           text="Interests"
           image={require('./../res/hobbies.png')}
+          disabled={talking}
           onPress={() => {
             var text = "I'm interested in ";
 
@@ -473,20 +483,23 @@ function CustomButton({
   text,
   onPress,
   image,
+  disabled,
 }: {
   text: string;
   onPress: () => void;
   image: ImageSourcePropType;
+  disabled?: boolean;
 }) {
   return (
     <Pressable
       style={({pressed}) => [
         {
-          backgroundColor: pressed ? '#aaa' : '#333',
+          backgroundColor: pressed ? '#aaa' : disabled ? '#888' : '#333',
         },
         styles.button,
       ]}
       onPress={onPress}
+      disabled={disabled}
       //hitSlop is used to increase the touchable area of the button
       hitSlop={10}
       //pressRetentionOffset is used to increase the distance that you need to move your finger before the button is unpressed
