@@ -16,7 +16,6 @@ import {
   IWorkHistory,
   getThisUser,
   updateUser,
-  withDefaults,
 } from '../utilities/api';
 import {Picker} from '@react-native-picker/picker';
 
@@ -127,6 +126,7 @@ const ObjectViewer = <T extends object>({
               key !== '_id' &&
               (Array.isArray(data[selected][key]) ? (
                 <ObjectViewer
+                  key={key}
                   data={data[selected][key]}
                   title={key}
                   updateState={() => {}}

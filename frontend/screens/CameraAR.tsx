@@ -6,6 +6,7 @@ import {
   ViroAmbientLight,
   ViroAnimations,
   ViroNode,
+  ViroText,
 } from '@viro-community/react-viro';
 import React, {useEffect, useState} from 'react';
 import {
@@ -197,6 +198,14 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
           />
         </ViroNode>
       </ViroNode>
+      <ViroText
+        text="Tap on the robot to change the model!"
+        color="#ff0000"
+        style={{fontSize: 20, textAlignVertical: 'center'}}
+        width={2}
+        height={4}
+        position={[0, 1, -3]}
+      />
     </ViroARScene>
   );
 };
