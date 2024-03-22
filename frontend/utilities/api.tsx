@@ -4,11 +4,12 @@ import axios from 'axios';
 //if API_BASE_URL is not being loaded from your .env, making any change to this file
 //will force a reload of the app and the new .env file will be loaded
 
-export const API_URL = API_BASE_URL;
+export const API_URL = 'https://193a-143-52-56-76.ngrok-free.app';
 
 export class IWorkHistory {
   company: string = '';
   position: string = '';
+
   startDate: Date = new Date();
   endDate: Date = new Date();
   description: string = '';
