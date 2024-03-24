@@ -48,6 +48,7 @@ export default function Login() {
         <TextInput
           placeholder="Please enter your password..."
           style={styles.inputBox}
+          secureTextEntry={true}
           onChangeText={text => {
             setPassword(text);
           }}

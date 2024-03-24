@@ -362,6 +362,15 @@ function MoreInfo({
   const windowWidth = useWindowDimensions().width;
   const margin = 10;
   const width = windowWidth - 2 * margin;
+  const [disableButtons, setDisableButtons] = useState(true);
+
+  useEffect(() => {
+    if (talking) {
+      setDisableButtons(true);
+    } else {
+      setDisableButtons(false);
+    }
+  }, [talking]);
   return (
     <>
       <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
@@ -420,8 +429,9 @@ function MoreInfo({
         <CustomButton
           text="Work"
           image={require('./../res/work.png')}
-          disabled={talking}
+          disabled={disableButtons}
           onPress={() => {
+            setDisableButtons(true);
             var text = '';
 
             user.workHistory!.forEach(entry => {
@@ -439,8 +449,9 @@ function MoreInfo({
         <CustomButton
           text="Education"
           image={require('./../res/education.png')}
-          disabled={talking}
+          disabled={disableButtons}
           onPress={() => {
+            setDisableButtons(true);
             var text = '';
 
             user.educationHistory!.forEach(entry => {
@@ -463,8 +474,9 @@ function MoreInfo({
         <CustomButton
           text="Interests"
           image={require('./../res/hobbies.png')}
-          disabled={talking}
+          disabled={disableButtons}
           onPress={() => {
+            setDisableButtons(true);
             var text = "I'm interested in ";
 
             user.interests!.forEach(entry => {
