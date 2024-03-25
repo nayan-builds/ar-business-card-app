@@ -1,7 +1,11 @@
 const userDB = require("../schema/user-schema");
 
 const getUser = async (req, res) => {
-  const { id } = req.params;
+  let { id } = req.params;
+  if (!id) {
+    //From middleware
+    id = req.user._id;
+  }
   try {
     const user = await userDB.findById(id);
     if (!user) {
@@ -11,6 +15,7 @@ const getUser = async (req, res) => {
     return res.status(200).json({ success: true, user });
   } catch (error) {
     console.log("❌ Get user failed");
+    console.log(error);
     return res.status(400).json({
       success: false,
       message: error ? error.message : "Get user failed",
@@ -116,7 +121,7 @@ const createUser = async (req, res) => {
 
 const editUser = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.user._id;
     const body = req.body;
     const update = {};
     if (typeof body.firstName !== "undefined") {
@@ -144,11 +149,11 @@ const editUser = async (req, res) => {
       update.contact = body.contact;
     }
 
-    console.log(update);
     const user = await userDB.findByIdAndUpdate(id, update, { new: true });
     console.log("✅ Update user successfully");
     return res.status(201).json({ success: true, user });
   } catch (error) {
+    console.log(error);
     console.log("❌ Update user failed");
     return res.status(400).json({
       success: false,

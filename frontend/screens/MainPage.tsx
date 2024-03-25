@@ -1,20 +1,11 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import {useNavigation} from '@react-navigation/native';
-import {NativeStackScreenProps} from '@react-navigation/native-stack';
+
 import React from 'react';
 import type {PropsWithChildren} from 'react';
 import {
   Image,
   ImageProps,
   SafeAreaView,
-  ScrollView,
-  StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -22,13 +13,9 @@ import {
   View,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+import {Colors} from 'react-native/Libraries/NewAppScreen';
+
+import {useAuth} from '../context/AuthContext';
 
 type SectionProps = PropsWithChildren<{
   title: string;
@@ -76,6 +63,7 @@ function Section({
 }
 function MainPage() {
   const navigation = useNavigation();
+  const {authState, onLogout} = useAuth();
 
   return (
     <SafeAreaView style={styles.backgroundStyle}>
@@ -93,9 +81,37 @@ function MainPage() {
           onPress={() => navigation.navigate('Camera')}>
           Click here to scan the card
         </Section>
-        <Section title="Create card" image={require('../res/hand-card.png')}>
-          Click here to create a card
-        </Section>
+        {authState?.authenticated ? (
+          <>
+            <Section
+              title="Manage card"
+              image={require('../res/hand-card.png')}
+              onPress={() => navigation.navigate('Manage Card')}>
+              Click here to manage your card
+            </Section>
+            <Section
+              title="Logout"
+              image={require('../res/logout.png')}
+              onPress={onLogout}>
+              Click here to logout
+            </Section>
+          </>
+        ) : (
+          <>
+            <Section
+              title="Create account"
+              image={require('../res/Create.png')}
+              onPress={() => navigation.navigate('CreateAccount')}>
+              Click here to create an account
+            </Section>
+            <Section
+              title="Login to account"
+              image={require('../res/log-in.png')}
+              onPress={() => navigation.navigate('Login')}>
+              Click here to login to account
+            </Section>
+          </>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -132,16 +148,6 @@ const styles = StyleSheet.create({
     minWidth: 50,
   },
 
-  contactDetailsContainer: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 32,
-    padding: 10,
-    borderWidth: 1,
-    borderRadius: 10,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   sectionTitle: {
     fontSize: 24,
     fontWeight: '600',

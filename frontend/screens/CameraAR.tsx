@@ -1,9 +1,12 @@
+import {API_URL} from '../utilities/api';
 import {
   Viro3DObject,
   ViroARScene,
   ViroARSceneNavigator,
   ViroAmbientLight,
-  ViroButton,
+  ViroAnimations,
+  ViroNode,
+  ViroText,
 } from '@viro-community/react-viro';
 import React, {useEffect, useState} from 'react';
 import {
@@ -13,7 +16,6 @@ import {
   Pressable,
   StyleSheet,
   Text,
-  Touchable,
   TouchableOpacity,
   View,
   useWindowDimensions,
@@ -23,52 +25,19 @@ import QRCodeScanner from 'react-native-qrcode-scanner';
 
 import RNFS from 'react-native-fs';
 import Sound from 'react-native-sound';
+import {IUserDetails, getUser} from '../utilities/api';
 
 const CARD_SIGNATURE = 'CARD_';
-
-interface WorkHistory {
-  company: string;
-  position: string;
-  startDate: Date;
-  endDate: Date;
-  description: string;
-}
-
-interface qualification {
-  level: string;
-  name: string;
-  grade: string;
-}
-
-interface educationHistory {
-  institution: string;
-  qualifications: qualification[];
-  startDate: Date;
-  endDate: Date;
-  description: string;
-}
-
-interface contact {
-  email?: string;
-  linkedIn?: string;
-  phone?: string;
-}
-
-interface userDetails {
-  overview?: string;
-  workHistory?: WorkHistory[];
-  educationHistory?: educationHistory[];
-  interests?: string[];
-  contact?: contact;
-}
 
 interface SceneARProps {
   sceneNavigator: {
     viroAppProps: {
       cardId: string;
-      user: userDetails;
-      setUser: (user: userDetails) => void;
+      user: IUserDetails;
+      setUser: (user: IUserDetails) => void;
       setWord: (word: string) => void;
+      setTalking: (talking: boolean) => void;
+      talking: boolean;
     };
   };
 }
@@ -82,39 +51,35 @@ const dateToReadable = (date: Date) => {
   return date.toLocaleDateString('en-US', options);
 };
 
-const playText = async (text: string, onWord: (word: string) => void) => {
-  const response = await fetch(
-    'https://e3d4-143-52-126-93.ngrok-free.app/api/tts',
-    {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        text: text,
-        voice: 'en-GB_JamesV3Voice',
-      }),
+const playText = async (
+  text: string,
+  setTalking: (talking: boolean) => void,
+  onWord: (word: string) => void,
+) => {
+  const response = await fetch(API_URL + '/api/tts', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
     },
-  );
-
+    body: JSON.stringify({
+      text: text,
+      voice: 'en-GB_JamesV3Voice',
+    }),
+  });
   const {audio, timings} = await response.json();
   if (!audio || !timings) return;
-
   const path = `${RNFS.TemporaryDirectoryPath}/audio.mp3`;
   await RNFS.writeFile(path, audio, 'base64');
-
   const sound = new Sound(path, '', error => {
     if (error) {
       console.log('failed to load sound', error);
       return;
     }
-
     //This is the length of each block of time in seconds,
     //If a word starts inside the current block, it will be
     //included in the subtitles
     const timeBlockLength = 1.5;
     let time = 0;
-
     setInterval(() => {
       sound.getCurrentTime((seconds, isPlaying) => {
         //This seems to keep playing even after the sound is finished?,
@@ -129,33 +94,27 @@ const playText = async (text: string, onWord: (word: string) => void) => {
           }
         }
         words = words.trim();
-
         //For some reason, this fixes the subtitles keeping the last word
         if (seconds >= sound.getDuration() - 0.01) words = '';
         if (isPlaying) onWord(words);
       });
     }, 300);
-
+    setTalking(true);
     sound.play(() => {
       //onEnd() callback
+      setTalking(false);
       onWord('');
     });
   });
 };
 
 const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
-  const {user, setUser, cardId, setWord} = sceneNavigator.viroAppProps;
+  const {user, setUser, cardId, setWord, talking, setTalking} =
+    sceneNavigator.viroAppProps;
 
   useEffect(() => {
     const fetchData = async () => {
-      const response = await fetch(
-        `https://e3d4-143-52-126-93.ngrok-free.app/api/user/${cardId}`,
-        {
-          method: 'GET',
-        },
-      );
-
-      const data = await response.json();
+      const data = await getUser(cardId);
       if (data.success) {
         setUser(data.user);
       }
@@ -166,30 +125,161 @@ const SceneAR: React.FC<SceneARProps> = ({sceneNavigator}) => {
 
   useEffect(() => {
     if (user && Object.keys(user).length !== 0) {
-      playText(user.overview!, word => setWord(word));
+      playText(user.overview!, setTalking, word => setWord(word));
     }
   }, [user]);
+
+  const models = [
+    {
+      source: require('./../res/r2d2.obj'),
+      resources: [require('./../res/r2d2.mtl')],
+    },
+    {
+      source: require('./../res/floatingrobot.obj'),
+      resources: [require('./../res/floatingrobot.mtl')],
+    },
+  ];
+
+  const [currentAnimation, setCurrentAnimation] = useState(idleAnimations[0]);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [isTalkingAnimationPlaying, setIsTalkingAnimationPlaying] =
+    useState(false);
+  const [modelId, setModelId] = useState(0);
+
+  useEffect(() => {
+    const animationInterval = setInterval(() => {
+      if (!isAnimating && !isTalkingAnimationPlaying) {
+        setIsAnimating(true);
+        const randomIndex = Math.floor(Math.random() * idleAnimations.length);
+        setCurrentAnimation(idleAnimations[randomIndex]);
+        setIsAnimating(false);
+      }
+    }, randomInterval(5000, 10000));
+
+    return () => clearInterval(animationInterval);
+  }, [isAnimating, isTalkingAnimationPlaying]);
+
+  useEffect(() => {
+    setIsTalkingAnimationPlaying(talking);
+    setCurrentAnimation('talk');
+  }, [talking]);
+
+  const randomInterval = (min: number, max: number) => {
+    return Math.floor(Math.random() * (max - min + 1) + min);
+  };
 
   return (
     <ViroARScene>
       <ViroAmbientLight color="#ffffff" />
-      <Viro3DObject
-        source={require('./../res/r2d2.obj')}
-        resources={[require('./../res/r2d2.mtl')]}
-        highAccuracyEvents={true}
+      <ViroNode
         position={[0, -0.2, -0.3]}
-        scale={[1, 1, 1]}
-        rotation={[0, -90, 0]}
-        type="OBJ"
+        animation={{
+          name: currentAnimation,
+          run: true,
+          loop: false,
+        }}>
+        <ViroNode
+          animation={{
+            name: 'talk',
+            run: isTalkingAnimationPlaying,
+            loop: true,
+          }}>
+          <Viro3DObject
+            source={models[modelId].source}
+            resources={models[modelId].resources.map(resource => resource)}
+            highAccuracyEvents={true}
+            scale={[0, 0, 0]}
+            rotation={[0, 0, 0]}
+            type="OBJ"
+            animation={{name: 'grow', run: true, loop: false, delay: 1500}}
+            onClick={() => {
+              setModelId(prevState => (prevState + 1) % models.length);
+            }}
+          />
+        </ViroNode>
+      </ViroNode>
+      <ViroText
+        text="Tap on the robot to change the model!"
+        color="#ff0000"
+        style={{fontSize: 20, textAlignVertical: 'center'}}
+        width={2}
+        height={4}
+        position={[0, 1, -3]}
       />
     </ViroARScene>
   );
 };
 
+const idleAnimations = ['spin', 'spinAndJump', 'walk'];
+
+ViroAnimations.registerAnimations({
+  spin: {
+    properties: {
+      rotateY: '+=360',
+    },
+    duration: 1000,
+    easing: 'EaseInEaseOut',
+  },
+  jumpUp: {
+    properties: {
+      positionY: '+=0.1',
+    },
+    duration: 500,
+    easing: 'EaseInEaseOut',
+  },
+  fallFromJump: {
+    properties: {
+      positionY: '-=0.1',
+    },
+    duration: 500,
+    easing: 'EaseInEaseOut',
+  },
+  jump: [['jumpUp', 'fallFromJump']],
+  spinAndJump: [['spin'], ['jump']],
+  rotateRight: {
+    properties: {
+      rotateY: '+=5',
+    },
+    duration: 50,
+    easing: 'EaseInEaseOut',
+  },
+  rotateLeft: {
+    properties: {
+      rotateY: '-=10',
+    },
+    duration: 100,
+    easing: 'EaseInEaseOut',
+  },
+  talk: [['rotateRight', 'rotateLeft', 'rotateRight']],
+  grow: {
+    properties: {
+      scaleX: '0.8',
+      scaleY: '0.8',
+      scaleZ: '0.8',
+    },
+    duration: 1500,
+    easing: 'EaseInEaseOut',
+  },
+  walkForward: {
+    properties: {
+      positionZ: '+=0.1',
+    },
+    duration: 1000,
+  },
+  walkBackward: {
+    properties: {
+      positionZ: '-=0.1',
+    },
+    duration: 1000,
+  },
+  walk: [['walkForward', 'walkBackward', 'walkBackward', 'walkForward']],
+});
+
 export default function Camera() {
   const [cardId, setCardId] = useState('');
-  const [user, setUser] = useState<userDetails>({});
+  const [user, setUser] = useState<IUserDetails>({});
   const [word, setWord] = useState('');
+  const [talking, setTalking] = useState(false);
 
   const onRead = (e: BarCodeReadEvent) => {
     var data = e.data;
@@ -218,6 +308,8 @@ export default function Camera() {
             user: user,
             setUser,
             setWord,
+            setTalking,
+            talking,
           }}
         />
         <View style={{position: 'absolute', left: 0, bottom: -10}}>
@@ -243,7 +335,13 @@ export default function Camera() {
               </Text>
             </View>
           )}
-          <MoreInfo user={user} setWord={setWord} />
+
+          <MoreInfo
+            user={user}
+            setWord={setWord}
+            setTalking={setTalking}
+            talking={talking}
+          />
         </View>
       </>
     );
@@ -253,13 +351,26 @@ export default function Camera() {
 function MoreInfo({
   user,
   setWord,
+  setTalking,
+  talking,
 }: {
-  user: userDetails;
+  user: IUserDetails;
   setWord: (word: string) => void;
+  setTalking: (talking: boolean) => void;
+  talking: boolean;
 }) {
   const windowWidth = useWindowDimensions().width;
   const margin = 10;
   const width = windowWidth - 2 * margin;
+  const [disableButtons, setDisableButtons] = useState(true);
+
+  useEffect(() => {
+    if (talking) {
+      setDisableButtons(true);
+    } else {
+      setDisableButtons(false);
+    }
+  }, [talking]);
   return (
     <>
       <View style={{flexDirection: 'row', justifyContent: 'flex-end'}}>
@@ -318,7 +429,9 @@ function MoreInfo({
         <CustomButton
           text="Work"
           image={require('./../res/work.png')}
+          disabled={disableButtons}
           onPress={() => {
+            setDisableButtons(true);
             var text = '';
 
             user.workHistory!.forEach(entry => {
@@ -330,13 +443,15 @@ function MoreInfo({
               } years. ${entry.description !== null ? entry.description : ''} `;
             });
 
-            playText(text, word => setWord(word));
+            playText(text, setTalking, word => setWord(word));
           }}
         />
         <CustomButton
           text="Education"
           image={require('./../res/education.png')}
+          disabled={disableButtons}
           onPress={() => {
+            setDisableButtons(true);
             var text = '';
 
             user.educationHistory!.forEach(entry => {
@@ -353,20 +468,22 @@ function MoreInfo({
               )}. While there, I studied ${qualificationText}`;
             });
 
-            playText(text, word => setWord(word));
+            playText(text, setTalking, word => setWord(word));
           }}
         />
         <CustomButton
           text="Interests"
           image={require('./../res/hobbies.png')}
+          disabled={disableButtons}
           onPress={() => {
+            setDisableButtons(true);
             var text = "I'm interested in ";
 
             user.interests!.forEach(entry => {
               text += entry;
             });
 
-            playText(text, word => setWord(word));
+            playText(text, setTalking, word => setWord(word));
           }}
         />
       </View>
@@ -378,20 +495,23 @@ function CustomButton({
   text,
   onPress,
   image,
+  disabled,
 }: {
   text: string;
   onPress: () => void;
   image: ImageSourcePropType;
+  disabled?: boolean;
 }) {
   return (
     <Pressable
       style={({pressed}) => [
         {
-          backgroundColor: pressed ? '#aaa' : '#333',
+          backgroundColor: pressed ? '#aaa' : disabled ? '#888' : '#333',
         },
         styles.button,
       ]}
       onPress={onPress}
+      disabled={disabled}
       //hitSlop is used to increase the touchable area of the button
       hitSlop={10}
       //pressRetentionOffset is used to increase the distance that you need to move your finger before the button is unpressed
