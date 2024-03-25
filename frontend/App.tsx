@@ -2,7 +2,6 @@ import * as React from 'react';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import Camera from './screens/CameraAR';
-import MyDetails from './screens/MyDetails';
 import ContactInfo from './screens/ContactInfo';
 import MainPage from './screens/MainPage';
 
@@ -12,7 +11,6 @@ import Login from './screens/Login';
 import {AuthProvider, useAuth} from './context/AuthContext';
 
 import ManageCard from './screens/ManageCard';
-
 
 const Stack = createNativeStackNavigator();
 
