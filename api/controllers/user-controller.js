@@ -7,7 +7,7 @@ const getUser = async (req, res) => {
     id = req.user._id;
   }
   try {
-    const user = await userDB.findById(id);
+    const user = await userDB.findById(id).select("-password -email").exec();
     if (!user) {
       throw Error("User not found");
     }
