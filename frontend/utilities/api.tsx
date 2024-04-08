@@ -5,7 +5,7 @@ import axios from 'axios';
 //will force a reload of the app and the new .env file will be loaded
 
 //Hard code url since env was not working
-export const API_URL = 'https://1ee3-92-31-222-177.ngrok-free.app';
+export const API_URL = '<URL Here>';
 
 export class IWorkHistory {
   company: string = '';
@@ -63,7 +63,10 @@ export const getThisUser = async () => {
 };
 
 export const updateUser = async (user: IUserDetails) => {
-  return await (
-    await axios.patch(`${API_URL}/api/user/`, user)
-  ).data;
+  try {
+    const res = await axios.patch(`${API_URL}/api/user/`, user);
+    return res.data;
+  } catch (error) {
+    return {error: true, message: (error as any).response.data.message};
+  }
 };

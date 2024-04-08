@@ -41,7 +41,7 @@ function Layout() {
         ) : (
           <>
             <Stack.Screen name="Login" component={Login} />
-            <Stack.Screen name="CreateAccount" component={CreateAccount} />
+            <Stack.Screen name="Create Account" component={CreateAccount} />
           </>
         )}
       </Stack.Navigator>
