@@ -37,6 +37,9 @@ async function signUp(req, res) {
 
     //validate email
     if (!validator.isEmail(email)) throw Error("Invalid email");
+    //check if email already exists
+    const userExists = await userDB.findOne({ email });
+    if (userExists) throw Error("Email is already in use");
 
     //validate password
     if (!validator.isStrongPassword(password))

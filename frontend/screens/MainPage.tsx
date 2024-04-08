@@ -101,7 +101,7 @@ function MainPage() {
             <Section
               title="Create account"
               image={require('../res/Create.png')}
-              onPress={() => navigation.navigate('CreateAccount')}>
+              onPress={() => navigation.navigate('Create Account')}>
               Click here to create an account
             </Section>
             <Section

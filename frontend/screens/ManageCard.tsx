@@ -254,12 +254,20 @@ const ManageCard = () => {
             />
             <Button
               title="Update"
-              onPress={() => {
-                updateUser(user);
-                setNotification({
-                  text: 'The card has been updated!',
-                  color: '#2ecc71',
-                });
+              onPress={async () => {
+                const res = await updateUser(user);
+                console.log(res);
+                if (res && res.error) {
+                  setNotification({
+                    text: res.message,
+                    color: '#e74c3c',
+                  });
+                } else {
+                  setNotification({
+                    text: 'The card has been updated!',
+                    color: '#2ecc71',
+                  });
+                }
               }}
             />
           </View>
